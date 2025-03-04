@@ -74,7 +74,6 @@ pub fn leave(args: &TeamLeaveArgs) {
         remove_user_from_team::Variables {
             team_id: team_info.id.to_string(),
             user_id: user_id.to_string(),
-            owner_team_user_id: team_info.owner_user_id.to_string(),
         },
     )
     .remove_user_from_team

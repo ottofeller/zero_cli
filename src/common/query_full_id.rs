@@ -3,7 +3,6 @@ use crate::common::graphql::{
     search_token_by_id::{search_token_by_id, SearchTokenById},
     search_usage_history_by_id::{search_usage_history_by_id, SearchUsageHistoryById},
     search_user_by_id::{search_user_by_id, SearchUserById},
-    search_user_secret_by_id::{search_user_secret_by_id, SearchUserSecretById},
 };
 use crate::common::{
     authorization_headers::authorization_headers, colorful_theme::theme, config::Config,
@@ -20,7 +19,6 @@ pub enum QueryType {
     Tokens,
     UsageHistory,
     User,
-    UserSecret,
 }
 
 struct SelectItem {
@@ -126,33 +124,6 @@ pub fn query_full_id(query_type: QueryType, short_id: String, access_token: &str
                 .collect()
         }
 
-        QueryType::UserSecret => {
-            let user_secret_error_message =
-                format!("Failed to retrieve usage secret with ID '{}'.", &short_id);
-
-            let user_secrets = execute_graphql_request::<
-                search_user_secret_by_id::Variables,
-                search_user_secret_by_id::ResponseData,
-            >(
-                authorization_headers.clone(),
-                SearchUserSecretById::build_query,
-                &client,
-                &user_secret_error_message,
-                search_user_secret_by_id::Variables {
-                    id: short_id.clone(),
-                },
-            )
-            .search_user_secret_by_id;
-
-            user_secrets
-                .iter()
-                .map(|element| SelectItem {
-                    id: element.id,
-                    description: element.name.clone(),
-                })
-                .collect()
-        }
-
         QueryType::User => {
             let user_error_message = format!("Failed to retrieve user with ID '{}'.", &short_id);
 
@@ -219,13 +190,6 @@ pub fn query_full_id(query_type: QueryType, short_id: String, access_token: &str
                 QueryType::UsageHistory => {
                     print_formatted_error(&format!(
                         "The usage history with short ID '{}' does not exist.",
-                        &short_id
-                    ));
-                }
-
-                QueryType::UserSecret => {
-                    print_formatted_error(&format!(
-                        "The user secret with short ID '{}' does not exist.",
                         &short_id
                     ));
                 }

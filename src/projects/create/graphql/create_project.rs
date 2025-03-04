@@ -19,8 +19,7 @@ pub mod create_project {
     pub struct TokenObject {
         #[serde(rename = "expiresAt")]
         pub expires_at: Option<String>,
-        pub id: Option<String>,
-        pub name: Option<String>,
+        pub name: String,
     }
     #[derive(Serialize)]
     pub struct Variables {
@@ -37,7 +36,7 @@ pub mod create_project {
     }
     #[derive(Deserialize)]
     pub struct CreateProjectCreateProject {
-        pub id: Option<String>,
+        pub id: Option<ID>,
         #[serde(rename = "tokenValue")]
         pub token_value: Option<String>,
         pub slug: Option<String>,

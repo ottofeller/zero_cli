@@ -16,15 +16,15 @@ directive @cached(
 scalar AWSJSON
 
 input AWSUpdateSecretsInputIntegration {
-  installationId: String!
+  installationId: ID!
 }
 
 input AWSUpdateSecretsInputZero {
-  secretsIds: [String!]!
+  secretsIds: [ID!]!
 }
 
 type AcceptInviteOutput {
-  id: String!
+  id: ID!
 }
 
 input BitbucketDownloadSecretsInput {
@@ -33,15 +33,15 @@ input BitbucketDownloadSecretsInput {
 }
 
 type BitbucketEnvironment {
-  id: String!
+  id: ID!
   isUsed: Boolean!
   name: String!
 }
 
 input BitbucketInputZero {
-  integrationConnectId: String!
-  projectId: String!
-  secretsIds: [String!]!
+  integrationConnectId: ID!
+  projectId: ID!
+  secretsIds: [ID!]!
 }
 
 input BitbucketInstallInputIntegration {
@@ -51,27 +51,27 @@ input BitbucketInstallInputIntegration {
 
 type BitbucketProject {
   environments: [BitbucketEnvironment!]!
-  id: String!
+  id: ID!
   name: String!
 }
 
 input BitbucketUpdateSecretsInputIntegration {
-  installationId: String!
+  installationId: ID!
 }
 
 input BitbucketUpdateSecretsInputZero {
-  secretsIds: [String!]!
+  secretsIds: [ID!]!
 }
 
 type BitbucketWorkspaceProjects {
-  id: String!
+  id: ID!
   name: String!
   repositories: [BitbucketProject!]!
 }
 
 input BitbucketWorkspaceProjectsInput {
-  integrationConnectId: String!
-  projectId: String!
+  integrationConnectId: ID!
+  projectId: ID!
 }
 
 type BitbucketWorkspaceProjectsOutput {
@@ -95,17 +95,17 @@ input Boolean_comparison_exp {
 
 type ChangePasswordOutput {
   email: String!
-  id: String!
+  id: ID!
 }
 
 type ChangeTeamOutput {
-  id: String!
+  id: ID!
   project: project
 }
 
 input CheckIntegrationDeployInput {
-  integrationConnectId: String
-  operationId: String
+  integrationConnectId: ID
+  operationId: ID
 }
 
 type CheckIntegrationDeployOutput {
@@ -125,12 +125,12 @@ type CliAccessTokensOutput {
 }
 
 input CloudflareAuthInput {
-  accountId: String!
+  accountId: ID!
   apiToken: String!
 }
 
 type CloudflareAuthOutput {
-  integrationConnectId: String!
+  integrationConnectId: ID!
 }
 
 input CloudflareDownloadSecretsInput {
@@ -139,15 +139,15 @@ input CloudflareDownloadSecretsInput {
 }
 
 type CloudflareEnvironment {
-  id: String!
+  id: ID!
   isUsed: Boolean!
   name: String!
 }
 
 input CloudflareInputZero {
-  integrationConnectId: String!
-  projectId: String!
-  secretsIds: [String!]!
+  integrationConnectId: ID!
+  projectId: ID!
+  secretsIds: [ID!]!
 }
 
 input CloudflareInstallInputIntegration {
@@ -157,13 +157,13 @@ input CloudflareInstallInputIntegration {
 
 type CloudflareProject {
   environments: [CloudflareEnvironment!]!
-  id: String!
+  id: ID!
   name: String!
 }
 
 input CloudflareProjectsInput {
-  integrationConnectId: String!
-  projectId: String!
+  integrationConnectId: ID!
+  projectId: ID!
 }
 
 type CloudflareProjectsOutput {
@@ -171,20 +171,37 @@ type CloudflareProjectsOutput {
 }
 
 input CloudflareUpdateSecretsInputIntegration {
-  installationId: String!
+  installationId: ID!
 }
 
 input CloudflareUpdateSecretsInputZero {
-  secretsIds: [String!]!
+  secretsIds: [ID!]!
 }
 
 type ConfirmEmailChangeOutput {
   accessToken: String!
-  userId: String!
+  userId: ID!
+}
+
+type CreateCredentialProjectOutput {
+  credentialProject: credentialProject
+  id: ID!
+  tokenValue: String
+}
+
+input CreateCredentialProjectTokenInput {
+  expiresAt: String
+  name: String!
+  projectId: ID!
+}
+
+type CreateCredentialProjectTokenOutput {
+  id: ID!
+  value: String!
 }
 
 type CreateProjectOutput {
-  id: String
+  id: ID
   project: project
   projectTeamId: String
   slug: String
@@ -210,17 +227,17 @@ input CreateSecretFieldInput {
 
 input CreateSecretInput {
   name: String!
-  projectId: String!
+  projectId: ID!
   slug: String!
   vendor: String!
 }
 
 type CreateSecretOutput {
-  id: String!
+  id: ID!
 }
 
 type CreateTeamOutput {
-  id: String!
+  id: ID!
 }
 
 type DecodeSharingSecretsOutput {
@@ -228,18 +245,19 @@ type DecodeSharingSecretsOutput {
 }
 
 type DecryptedSecretField {
-  id: String!
+  id: ID!
   key: String!
   value: String!
 }
 
 input DeleteIntegrationInput {
-  installationId: String!
+  installationId: ID!
   isDeleteInRemoteSourceEnabled: Boolean
 }
 
 type DeleteProjectOutput {
-  id: String!
+  id: ID!
+  project: project
 }
 
 enum DeployStatusIntegration {
@@ -255,15 +273,15 @@ type Environment {
 }
 
 type GitHubEnvironment {
-  id: String!
+  id: ID!
   isUsed: Boolean!
   name: String!
 }
 
 input GitHubInputZero {
-  integrationConnectId: String!
-  projectId: String!
-  secretsIds: [String!]!
+  integrationConnectId: ID!
+  projectId: ID!
+  secretsIds: [ID!]!
 }
 
 input GitHubInstallInputIntegration {
@@ -273,13 +291,13 @@ input GitHubInstallInputIntegration {
 
 type GitHubProject {
   environments: [GitHubEnvironment!]!
-  id: String!
+  id: ID!
   name: String!
 }
 
 input GitHubProjectsInput {
-  integrationConnectId: String!
-  projectId: String!
+  integrationConnectId: ID!
+  projectId: ID!
 }
 
 type GitHubProjectsOutput {
@@ -287,17 +305,17 @@ type GitHubProjectsOutput {
 }
 
 input GitHubUpdateSecretsInputIntegration {
-  installationId: String!
+  installationId: ID!
 }
 
 input GitHubUpdateSecretsInputZero {
-  secretsIds: [String!]!
+  secretsIds: [ID!]!
 }
 
 input GitLabInputZero {
-  integrationConnectId: String!
-  projectId: String!
-  secretsIds: [String!]!
+  integrationConnectId: ID!
+  projectId: ID!
+  secretsIds: [ID!]!
 }
 
 input GitLabInstallInputIntegration {
@@ -307,13 +325,13 @@ input GitLabInstallInputIntegration {
 
 type GitLabProject {
   environments: [GitHubEnvironment!]!
-  id: String!
+  id: ID!
   name: String!
 }
 
 input GitLabProjectsInput {
-  integrationConnectId: String!
-  projectId: String!
+  integrationConnectId: ID!
+  projectId: ID!
 }
 
 type GitLabProjectsOutput {
@@ -321,11 +339,11 @@ type GitLabProjectsOutput {
 }
 
 input GitLabUpdateSecretsInputIntegration {
-  installationId: String!
+  installationId: ID!
 }
 
 input GitLabUpdateSecretsInputZero {
-  secretsIds: [String!]!
+  secretsIds: [ID!]!
 }
 
 type InsertCliCodeOutput {
@@ -337,7 +355,7 @@ type InsertSecretSharingRecordOutput {
 }
 
 type InstallationOutput {
-  id: String!
+  id: ID!
 }
 
 """
@@ -356,11 +374,11 @@ input Int_comparison_exp {
 }
 
 input IntegrationAWSInstallInputZero {
-  integrationConnectId: String
-  operationId: String
-  projectId: String!
+  integrationConnectId: ID
+  operationId: ID
+  projectId: ID!
   secretName: String!
-  secretsIds: [String!]!
+  secretsIds: [ID!]!
 }
 
 type IntegrationAWSInstallOutput {
@@ -368,7 +386,7 @@ type IntegrationAWSInstallOutput {
 }
 
 type IntegrationAWSInstallOutputInstallation {
-  id: String!
+  id: ID!
 }
 
 input LoginInput {
@@ -382,11 +400,11 @@ input NetlifyInstallInputIntegration {
 }
 
 input NetlifyInstallInputZero {
-  integrationConnectId: String!
+  integrationConnectId: ID!
   isDownloadSecretsEnabled: Boolean!
   isVendorPriority: Boolean!
-  projectId: String!
-  secretsIds: [String]!
+  projectId: ID!
+  secretsIds: [ID]!
 }
 
 type NetlifyInstallOutput {
@@ -394,19 +412,19 @@ type NetlifyInstallOutput {
 }
 
 type NetlifyInstallOutputInstallation {
-  id: String!
+  id: ID!
 }
 
 type NetlifyProject {
   environments: [Environment!]!
-  id: String!
+  id: ID!
   isInUse: Boolean!
   name: String!
 }
 
 input NetlifyProjectsInput {
-  integrationConnectId: String!
-  projectId: String!
+  integrationConnectId: ID!
+  projectId: ID!
 }
 
 type NetlifyProjectsOutput {
@@ -415,17 +433,23 @@ type NetlifyProjectsOutput {
 
 input NetlifyUpdateSecretsInputIntegration {
   buildHookUrl: String
-  installationId: String!
+  installationId: ID!
 }
 
 input NetlifyUpdateSecretsInputZero {
-  secretsIds: [String]
+  secretsIds: [ID]
 }
 
 type NetlifyUpdateSecretsOutput {
   errors: [String!]
   installation: InstallationOutput!
   success: Boolean!
+}
+
+type RegenerateCredentialProjectTokenOutput {
+  credentialProjectToken: credentialToken
+  id: ID!
+  value: String!
 }
 
 type RegenerateProjectTokenOutput {
@@ -441,11 +465,11 @@ input RegisterInput {
 }
 
 type RejectInvitationOutput {
-  id: String!
+  id: ID!
 }
 
 type RemoveTeamOutput {
-  id: String!
+  id: ID!
 }
 
 type RemoveUserFromTeamOutput {
@@ -466,7 +490,7 @@ type ResendSignUpEmailOutput {
 }
 
 type SendInviteUserTeamOutput {
-  teamId: String!
+  teamId: ID!
 }
 
 type SharingDataOutput {
@@ -534,26 +558,30 @@ type SuccessOutput {
 
 input TokenObject {
   expiresAt: String
-  id: String
-  name: String
+  name: String!
+}
+
+type TransferCredentialProjectOutput {
+  credentialProject: credentialProject
+  id: ID!
 }
 
 type UpdateProjectSettingsOutput {
-  id: String!
+  id: ID!
   project: project
 }
 
 type UpdateSecretOutput {
-  id: String!
+  id: ID!
 }
 
 type UpdateTeamOutput {
-  id: String!
+  id: ID!
 }
 
 input UpdateUserSecretFieldsInput {
   decryptedValue: String!
-  id: String
+  id: ID
   name: String!
 }
 
@@ -563,11 +591,11 @@ input VercelInstallInputIntegration {
 }
 
 input VercelInstallInputZero {
-  integrationConnectId: String!
+  integrationConnectId: ID!
   isDownloadSecretsEnabled: Boolean!
   isVendorPriority: Boolean!
-  projectId: String!
-  secretsIds: [String]!
+  projectId: ID!
+  secretsIds: [ID]!
 }
 
 type VercelInstallOutput {
@@ -575,19 +603,19 @@ type VercelInstallOutput {
 }
 
 type VercelInstallOutputInstallation {
-  id: String!
+  id: ID!
 }
 
 type VercelProject {
   environments: [Environment!]!
-  id: String!
+  id: ID!
   isInUse: Boolean!
   name: String!
 }
 
 input VercelProjectsInput {
-  integrationConnectId: String!
-  projectId: String!
+  integrationConnectId: ID!
+  projectId: ID!
 }
 
 type VercelProjectsOutput {
@@ -596,11 +624,11 @@ type VercelProjectsOutput {
 
 input VercelUpdateSecretsInputIntegration {
   buildHookUrl: String
-  installationId: String!
+  installationId: ID!
 }
 
 input VercelUpdateSecretsInputZero {
-  secretsIds: [String]
+  secretsIds: [ID]
 }
 
 type VercelUpdateSecretsOutput {
@@ -609,17 +637,7 @@ type VercelUpdateSecretsOutput {
   success: Boolean!
 }
 
-input ViewSecretFieldsInput {
-  secretId: String!
-}
-
-type ViewSecretFieldsOutput {
-  secretFields: [DecryptedSecretField!]!
-}
-
-"""
-columns and relationships of "credentialProject"
-"""
+"""User credential projects table from the Zero platform"""
 type credentialProject {
   createdAt: timestamptz!
 
@@ -641,6 +659,24 @@ type credentialProject {
     where: userCredentialSecret_bool_exp
   ): [userCredentialSecret!]!
 
+  """An aggregate relationship"""
+  credentialSecrets_aggregate(
+    """distinct select on columns"""
+    distinct_on: [userCredentialSecret_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [userCredentialSecret_order_by!]
+
+    """filter the rows returned"""
+    where: userCredentialSecret_bool_exp
+  ): userCredentialSecret_aggregate!
+
   """An array relationship"""
   credentialTokens(
     """distinct select on columns"""
@@ -658,7 +694,7 @@ type credentialProject {
     """filter the rows returned"""
     where: credentialToken_bool_exp
   ): [credentialToken!]!
-  description: String
+  description: String!
   icon: String!
   id: uuid!
   lastUpdatedAt: timestamptz!
@@ -672,6 +708,15 @@ type credentialProject {
 }
 
 """
+order by aggregate values of table "credentialProject"
+"""
+input credentialProject_aggregate_order_by {
+  count: order_by
+  max: credentialProject_max_order_by
+  min: credentialProject_min_order_by
+}
+
+"""
 Boolean expression to filter rows from the table "credentialProject". All fields are combined with a logical 'AND'.
 """
 input credentialProject_bool_exp {
@@ -680,6 +725,7 @@ input credentialProject_bool_exp {
   _or: [credentialProject_bool_exp!]
   createdAt: timestamptz_comparison_exp
   credentialSecrets: userCredentialSecret_bool_exp
+  credentialSecrets_aggregate: userCredentialSecret_aggregate_bool_exp
   credentialTokens: credentialToken_bool_exp
   description: String_comparison_exp
   icon: String_comparison_exp
@@ -690,6 +736,36 @@ input credentialProject_bool_exp {
   team: team_bool_exp
   teamId: uuid_comparison_exp
   updatedAt: timestamptz_comparison_exp
+}
+
+"""
+order by max() on columns of table "credentialProject"
+"""
+input credentialProject_max_order_by {
+  createdAt: order_by
+  description: order_by
+  icon: order_by
+  id: order_by
+  lastUpdatedAt: order_by
+  name: order_by
+  slug: order_by
+  teamId: order_by
+  updatedAt: order_by
+}
+
+"""
+order by min() on columns of table "credentialProject"
+"""
+input credentialProject_min_order_by {
+  createdAt: order_by
+  description: order_by
+  icon: order_by
+  id: order_by
+  lastUpdatedAt: order_by
+  name: order_by
+  slug: order_by
+  teamId: order_by
+  updatedAt: order_by
 }
 
 """
@@ -799,9 +875,7 @@ input credentialProject_updates {
   where: credentialProject_bool_exp!
 }
 
-"""
-columns and relationships of "credentialToken"
-"""
+"""Table for storing credential project tokens."""
 type credentialToken {
   createdAt: timestamptz!
 
@@ -1708,6 +1782,7 @@ input jsonb_comparison_exp {
 }
 
 enum listIdEnum_enum {
+  credentials
   integrations
   projects
   secrets
@@ -1728,24 +1803,39 @@ input listIdEnum_enum_comparison_exp {
 
 """mutation root"""
 type mutation_root {
-  acceptInvitation(id: String!): AcceptInviteOutput!
+  acceptInvitation(id: ID!): AcceptInviteOutput!
   awsUpdateSecrets(integrationInstallation: AWSUpdateSecretsInputIntegration!, zero: AWSUpdateSecretsInputZero!): SuccessOutput!
   bitbucketInstall(downloadSecrets: BitbucketDownloadSecretsInput!, integrationInstallation: BitbucketInstallInputIntegration!, zero: BitbucketInputZero!): SuccessOutput!
   bitbucketUpdateSecrets(integrationInstallation: BitbucketUpdateSecretsInputIntegration!, zero: BitbucketUpdateSecretsInputZero!): SuccessOutput!
   changePassword(email: String!, newPassword: String!, oldPassword: String!): ChangePasswordOutput!
-  changeTeam(projectId: String!, teamId: String!): ChangeTeamOutput!
+  changeTeam(projectId: ID!, teamId: ID!): ChangeTeamOutput!
   cliAccessTokens(object: CliAccessTokensInput!): CliAccessTokensOutput!
   cloudflareAuth(auth: CloudflareAuthInput!): CloudflareAuthOutput!
   cloudflareInstall(downloadSecrets: CloudflareDownloadSecretsInput!, integrationInstallation: CloudflareInstallInputIntegration!, zero: CloudflareInputZero!): SuccessOutput!
   cloudflareUpdateSecrets(integrationInstallation: CloudflareUpdateSecretsInputIntegration!, zero: CloudflareUpdateSecretsInputZero!): SuccessOutput!
   confirmEmailChange(code: String!): ConfirmEmailChangeOutput!
+  createCredentialProject(icon: String!, name: String!, slug: String!, token: TokenObject!): CreateCredentialProjectOutput!
+  createCredentialProjectToken(object: CreateCredentialProjectTokenInput!): CreateCredentialProjectTokenOutput!
   createProject(icon: String!, name: String!, slug: String!, token: TokenObject): CreateProjectOutput!
   createProjectToken(object: CreateProjectTokenInput!): CreateProjectTokenOutput!
   createSecret(fields: [CreateSecretFieldInput!]!, secret: CreateSecretInput!): CreateSecretOutput!
   createTeam(name: String!, slug: String!): CreateTeamOutput!
-  decodeSharingSecrets(id: String!, passphrase: String!): DecodeSharingSecretsOutput!
+  decodeSharingSecrets(id: ID!, passphrase: String!): DecodeSharingSecretsOutput!
   deleteIntegration(integrationInstallation: DeleteIntegrationInput!): SuccessOutput!
-  deleteProject(id: String!, isVendorSecretsMarkedAsDeleted: Boolean!): DeleteProjectOutput!
+  deleteProject(id: ID!, isVendorSecretsMarkedAsDeleted: Boolean!): DeleteProjectOutput!
+
+  """
+  delete data from the table: "credentialProject"
+  """
+  delete_credentialProject(
+    """filter the rows which have to be deleted"""
+    where: credentialProject_bool_exp!
+  ): credentialProject_mutation_response
+
+  """
+  delete single row from the table: "credentialProject"
+  """
+  delete_credentialProject_by_pk(id: uuid!): credentialProject
 
   """
   delete data from the table: "credentialToken"
@@ -1894,7 +1984,7 @@ type mutation_root {
   gitlabInstall(integrationInstallation: GitLabInstallInputIntegration!, zero: GitLabInputZero!): SuccessOutput!
   gitlabUpdateSecrets(integrationInstallation: GitLabUpdateSecretsInputIntegration!, zero: GitLabUpdateSecretsInputZero!): SuccessOutput!
   insertCliCode(code: String!): InsertCliCodeOutput!
-  insertSecretSharingRecord(expiresAt: String!, passphrase: String!, secretsFieldIds: [String!]!): InsertSecretSharingRecordOutput!
+  insertSecretSharingRecord(expiresAt: String!, passphrase: String!, secretsFieldIds: [ID!]!): InsertSecretSharingRecordOutput!
 
   """
   insert data into the table: "integrationInstallationUserSecret"
@@ -2124,20 +2214,22 @@ type mutation_root {
   logout: SuccessOutput!
   netlifyInstall(integrationInstallation: NetlifyInstallInputIntegration!, zero: NetlifyInstallInputZero!): NetlifyInstallOutput!
   netlifyUpdateSecrets(integrationInstallation: NetlifyUpdateSecretsInputIntegration!, zero: NetlifyUpdateSecretsInputZero!): NetlifyUpdateSecretsOutput!
+  regenerateCredentialProjectToken(expiresAt: String, id: ID!): RegenerateCredentialProjectTokenOutput!
   regenerateProjectToken(expiresAt: String, id: ID!): RegenerateProjectTokenOutput!
 
   """Register api action"""
   register(object: RegisterInput!): SuccessOutput!
-  rejectInvitation(id: String!): RejectInvitationOutput!
-  removeTeam(teamId: String!): RemoveTeamOutput!
+  rejectInvitation(id: ID!): RejectInvitationOutput!
+  removeTeam(teamId: ID!): RemoveTeamOutput!
   removeUserFromTeam(teamId: ID!, userId: ID!): RemoveUserFromTeamOutput!
   requestEmailChange(newEmail: String!): RequestEmailChangeOutput!
   requestResetPassword(email: String!, isReset: Boolean!): RequestResetPasswordOutput!
   resendSignUpEmail: ResendSignUpEmailOutput!
-  sendInviteUserTeam(email: String!, teamId: String!): SendInviteUserTeamOutput!
-  updateProjectSettings(icon: String!, id: String!, name: String!, slug: String!, teamId: String!): UpdateProjectSettingsOutput!
-  updateSecret(fields: [UpdateUserSecretFieldsInput!]!, id: String!, name: String!, slug: String!): UpdateSecretOutput!
-  updateTeam(id: String!, name: String!, slug: String!): UpdateTeamOutput!
+  sendInviteUserTeam(email: String!, teamId: ID!): SendInviteUserTeamOutput!
+  transferCredentialProject(projectId: ID!, teamId: ID!): TransferCredentialProjectOutput!
+  updateProjectSettings(icon: String!, id: ID!, name: String!, slug: String!, teamId: ID!): UpdateProjectSettingsOutput!
+  updateSecret(fields: [UpdateUserSecretFieldsInput!]!, id: ID!, name: String!, slug: String!): UpdateSecretOutput!
+  updateTeam(id: ID!, name: String!, slug: String!): UpdateTeamOutput!
 
   """
   update data of the table: "credentialProject"
@@ -3165,7 +3257,7 @@ type project {
     """filter the rows returned"""
     where: integrationInstallation_bool_exp
   ): integrationInstallation_aggregate!
-  lastUpdatedAt: timestamptz
+  lastUpdatedAt: timestamptz!
 
   """
   A computed field, executes function "computeProjectLastUsedAt"
@@ -3175,8 +3267,8 @@ type project {
   slug: String!
 
   """An object relationship"""
-  team: team
-  teamId: uuid
+  team: team!
+  teamId: uuid!
 
   """An array relationship"""
   tokens(
@@ -3832,56 +3924,6 @@ type query_root {
     """filter the rows returned"""
     where: user_bool_exp
   ): [user!]!
-
-  """
-  execute function "search_user_secret_by_id" which returns "userSecret"
-  """
-  search_user_secret_by_id(
-    """
-    input parameters for function "search_user_secret_by_id"
-    """
-    args: search_user_secret_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [userSecret_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [userSecret_order_by!]
-
-    """filter the rows returned"""
-    where: userSecret_bool_exp
-  ): [userSecret!]!
-
-  """
-  execute function "search_user_secret_by_id" and query aggregates on result of table type "userSecret"
-  """
-  search_user_secret_by_id_aggregate(
-    """
-    input parameters for function "search_user_secret_by_id_aggregate"
-    """
-    args: search_user_secret_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [userSecret_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [userSecret_order_by!]
-
-    """filter the rows returned"""
-    where: userSecret_bool_exp
-  ): userSecret_aggregate!
   sharingData(id: ID!): SharingDataOutput
 
   """
@@ -4170,6 +4212,26 @@ type query_root {
   userCredentialSecretField_by_pk(id: uuid!): userCredentialSecretField
 
   """
+  fetch aggregated fields from the table: "userCredentialSecret"
+  """
+  userCredentialSecret_aggregate(
+    """distinct select on columns"""
+    distinct_on: [userCredentialSecret_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [userCredentialSecret_order_by!]
+
+    """filter the rows returned"""
+    where: userCredentialSecret_bool_exp
+  ): userCredentialSecret_aggregate!
+
+  """
   fetch data from the table: "userCredentialSecret" using primary key columns
   """
   userCredentialSecret_by_pk(id: uuid!): userCredentialSecret
@@ -4264,7 +4326,7 @@ type query_root {
 
   """fetch data from the table: "viewPreferences" using primary key columns"""
   viewPreferences_by_pk(id: uuid!): viewPreferences
-  viewSecretFields(secretField: ViewSecretFieldsInput!): ViewSecretFieldsOutput!
+  viewSecretFields(projectSlug: String!, secretSlug: String!, teamSlug: String!): [DecryptedSecretField!]!
 }
 
 enum registrationStep_enum {
@@ -4302,10 +4364,6 @@ input search_usage_history_by_id_args {
 }
 
 input search_user_by_id_args {
-  match: String
-}
-
-input search_user_secret_by_id_args {
   match: String
 }
 
@@ -4801,56 +4859,6 @@ type subscription_root {
   ): [user!]!
 
   """
-  execute function "search_user_secret_by_id" which returns "userSecret"
-  """
-  search_user_secret_by_id(
-    """
-    input parameters for function "search_user_secret_by_id"
-    """
-    args: search_user_secret_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [userSecret_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [userSecret_order_by!]
-
-    """filter the rows returned"""
-    where: userSecret_bool_exp
-  ): [userSecret!]!
-
-  """
-  execute function "search_user_secret_by_id" and query aggregates on result of table type "userSecret"
-  """
-  search_user_secret_by_id_aggregate(
-    """
-    input parameters for function "search_user_secret_by_id_aggregate"
-    """
-    args: search_user_secret_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [userSecret_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [userSecret_order_by!]
-
-    """filter the rows returned"""
-    where: userSecret_bool_exp
-  ): userSecret_aggregate!
-
-  """
   fetch data from the table: "team"
   """
   team(
@@ -5234,6 +5242,26 @@ type subscription_root {
   ): [userCredentialSecretField!]!
 
   """
+  fetch aggregated fields from the table: "userCredentialSecret"
+  """
+  userCredentialSecret_aggregate(
+    """distinct select on columns"""
+    distinct_on: [userCredentialSecret_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [userCredentialSecret_order_by!]
+
+    """filter the rows returned"""
+    where: userCredentialSecret_bool_exp
+  ): userCredentialSecret_aggregate!
+
+  """
   fetch data from the table: "userCredentialSecret" using primary key columns
   """
   userCredentialSecret_by_pk(id: uuid!): userCredentialSecret
@@ -5404,6 +5432,24 @@ columns and relationships of "team"
 """
 type team {
   createdAt: timestamptz!
+
+  """An array relationship"""
+  credentialProjects(
+    """distinct select on columns"""
+    distinct_on: [credentialProject_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [credentialProject_order_by!]
+
+    """filter the rows returned"""
+    where: credentialProject_bool_exp
+  ): [credentialProject!]!
   description: String!
   id: uuid!
 
@@ -6003,6 +6049,7 @@ input team_bool_exp {
   _not: team_bool_exp
   _or: [team_bool_exp!]
   createdAt: timestamptz_comparison_exp
+  credentialProjects: credentialProject_bool_exp
   description: String_comparison_exp
   id: uuid_comparison_exp
   invitations: teamInvitation_bool_exp
@@ -6083,6 +6130,7 @@ type team_mutation_response {
 """Ordering options when selecting data from "team"."""
 input team_order_by {
   createdAt: order_by
+  credentialProjects_aggregate: credentialProject_aggregate_order_by
   description: order_by
   id: order_by
   invitations_aggregate: teamInvitation_aggregate_order_by
@@ -6904,6 +6952,7 @@ type user {
 """Custom secrets with OAuth credentials."""
 type userCredentialSecret {
   createdAt: timestamptz!
+  description: String!
   expiresAt: timestamptz!
 
   """An array relationship"""
@@ -6929,7 +6978,6 @@ type userCredentialSecret {
     path: String
   ): jsonb
   name: String!
-  note: String!
 
   """An object relationship"""
   project: credentialProject!
@@ -7158,6 +7206,34 @@ input userCredentialSecretField_updates {
 }
 
 """
+aggregated selection of "userCredentialSecret"
+"""
+type userCredentialSecret_aggregate {
+  aggregate: userCredentialSecret_aggregate_fields
+  nodes: [userCredentialSecret!]!
+}
+
+input userCredentialSecret_aggregate_bool_exp {
+  count: userCredentialSecret_aggregate_bool_exp_count
+}
+
+input userCredentialSecret_aggregate_bool_exp_count {
+  arguments: [userCredentialSecret_select_column!]
+  distinct: Boolean
+  filter: userCredentialSecret_bool_exp
+  predicate: Int_comparison_exp!
+}
+
+"""
+aggregate fields of "userCredentialSecret"
+"""
+type userCredentialSecret_aggregate_fields {
+  count(columns: [userCredentialSecret_select_column!], distinct: Boolean): Int!
+  max: userCredentialSecret_max_fields
+  min: userCredentialSecret_min_fields
+}
+
+"""
 order by aggregate values of table "userCredentialSecret"
 """
 input userCredentialSecret_aggregate_order_by {
@@ -7179,12 +7255,12 @@ input userCredentialSecret_bool_exp {
   _not: userCredentialSecret_bool_exp
   _or: [userCredentialSecret_bool_exp!]
   createdAt: timestamptz_comparison_exp
+  description: String_comparison_exp
   expiresAt: timestamptz_comparison_exp
   fields: userCredentialSecretField_bool_exp
   id: uuid_comparison_exp
   meta: jsonb_comparison_exp
   name: String_comparison_exp
-  note: String_comparison_exp
   project: credentialProject_bool_exp
   projectId: uuid_comparison_exp
   slug: String_comparison_exp
@@ -7227,14 +7303,26 @@ input userCredentialSecret_delete_key_input {
 input type for inserting data into table "userCredentialSecret"
 """
 input userCredentialSecret_insert_input {
+  description: String
   expiresAt: timestamptz
   fields: userCredentialSecretField_arr_rel_insert_input
   meta: jsonb
   name: String
-  note: String
   projectId: uuid
   slug: String
   vendor: vendorEnum_enum
+}
+
+"""aggregate max on columns"""
+type userCredentialSecret_max_fields {
+  createdAt: timestamptz
+  description: String
+  expiresAt: timestamptz
+  id: uuid
+  name: String
+  projectId: uuid
+  slug: String
+  updatedAt: timestamptz
 }
 
 """
@@ -7242,13 +7330,25 @@ order by max() on columns of table "userCredentialSecret"
 """
 input userCredentialSecret_max_order_by {
   createdAt: order_by
+  description: order_by
   expiresAt: order_by
   id: order_by
   name: order_by
-  note: order_by
   projectId: order_by
   slug: order_by
   updatedAt: order_by
+}
+
+"""aggregate min on columns"""
+type userCredentialSecret_min_fields {
+  createdAt: timestamptz
+  description: String
+  expiresAt: timestamptz
+  id: uuid
+  name: String
+  projectId: uuid
+  slug: String
+  updatedAt: timestamptz
 }
 
 """
@@ -7256,10 +7356,10 @@ order by min() on columns of table "userCredentialSecret"
 """
 input userCredentialSecret_min_order_by {
   createdAt: order_by
+  description: order_by
   expiresAt: order_by
   id: order_by
   name: order_by
-  note: order_by
   projectId: order_by
   slug: order_by
   updatedAt: order_by
@@ -7298,12 +7398,12 @@ input userCredentialSecret_on_conflict {
 """Ordering options when selecting data from "userCredentialSecret"."""
 input userCredentialSecret_order_by {
   createdAt: order_by
+  description: order_by
   expiresAt: order_by
   fields_aggregate: userCredentialSecretField_aggregate_order_by
   id: order_by
   meta: order_by
   name: order_by
-  note: order_by
   project: credentialProject_order_by
   projectId: order_by
   slug: order_by
@@ -7329,6 +7429,9 @@ enum userCredentialSecret_select_column {
   createdAt
 
   """column name"""
+  description
+
+  """column name"""
   expiresAt
 
   """column name"""
@@ -7339,9 +7442,6 @@ enum userCredentialSecret_select_column {
 
   """column name"""
   name
-
-  """column name"""
-  note
 
   """column name"""
   projectId
@@ -7360,10 +7460,10 @@ enum userCredentialSecret_select_column {
 input type for updating data in table "userCredentialSecret"
 """
 input userCredentialSecret_set_input {
+  description: String
   expiresAt: timestamptz
   meta: jsonb
   name: String
-  note: String
   slug: String
   vendor: vendorEnum_enum
 }
@@ -7382,11 +7482,11 @@ input userCredentialSecret_stream_cursor_input {
 """Initial value of the column from where the streaming should start"""
 input userCredentialSecret_stream_cursor_value_input {
   createdAt: timestamptz
+  description: String
   expiresAt: timestamptz
   id: uuid
   meta: jsonb
   name: String
-  note: String
   projectId: uuid
   slug: String
   updatedAt: timestamptz
@@ -7398,6 +7498,9 @@ update columns of table "userCredentialSecret"
 """
 enum userCredentialSecret_update_column {
   """column name"""
+  description
+
+  """column name"""
   expiresAt
 
   """column name"""
@@ -7405,9 +7508,6 @@ enum userCredentialSecret_update_column {
 
   """column name"""
   name
-
-  """column name"""
-  note
 
   """column name"""
   slug
@@ -7445,9 +7545,7 @@ input userCredentialSecret_updates {
   where: userCredentialSecret_bool_exp!
 }
 
-"""
-columns and relationships of "userSecret"
-"""
+"""Table of user secrets."""
 type userSecret {
   createdAt: timestamptz!
   description: String!
@@ -7538,9 +7636,7 @@ type userSecret {
   vendor: vendorEnum_enum!
 }
 
-"""
-columns and relationships of "userSecretField"
-"""
+"""Fields of the user secrets."""
 type userSecretField {
   createdAt: timestamptz!
   id: uuid!

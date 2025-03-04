@@ -1,13 +1,5 @@
-mutation RemoveUserFromTeam(
-  $teamId: String!
-  $userId: String!
-  $ownerTeamUserId: String!
-) {
-  removeUserFromTeam(
-      teamId: $teamId
-      userId: $userId
-      ownerTeamUserId: $ownerTeamUserId
-  ) {
+mutation RemoveUserFromTeam($teamId: ID!, $userId: ID!) {
+  removeUserFromTeam(teamId: $teamId, userId: $userId) {
     teamId
   }
 }

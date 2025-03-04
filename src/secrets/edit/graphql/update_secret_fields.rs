@@ -4,7 +4,7 @@ pub mod update_secret_fields {
     #![allow(dead_code)]
     use std::result::Result;
     pub const OPERATION_NAME: &str = "UpdateSecretFields";
-    pub const QUERY : & str = "mutation UpdateSecretFields(\n  $id: String!\n  $name: String!\n  $slug: String!\n  $userSecretFields: [UpdateUserSecretFieldsInput!]!\n) {\n  updateSecret(fields: $userSecretFields, id: $id, name: $name, slug: $slug) {\n    id\n  }\n}\n" ;
+    pub const QUERY : & str = "mutation UpdateSecretFields(\n  $id: ID!\n  $name: String!\n  $slug: String!\n  $userSecretFields: [UpdateUserSecretFieldsInput!]!\n) {\n  updateSecret(fields: $userSecretFields, id: $id, name: $name, slug: $slug) {\n    id\n  }\n}\n" ;
     use super::*;
     use serde::{Deserialize, Serialize};
     #[allow(dead_code)]
@@ -19,12 +19,12 @@ pub mod update_secret_fields {
     pub struct UpdateUserSecretFieldsInput {
         #[serde(rename = "decryptedValue")]
         pub decrypted_value: String,
-        pub id: Option<String>,
+        pub id: Option<ID>,
         pub name: String,
     }
     #[derive(Serialize)]
     pub struct Variables {
-        pub id: String,
+        pub id: ID,
         pub name: String,
         pub slug: String,
         #[serde(rename = "userSecretFields")]
@@ -38,7 +38,7 @@ pub mod update_secret_fields {
     }
     #[derive(Deserialize)]
     pub struct UpdateSecretFieldsUpdateSecret {
-        pub id: String,
+        pub id: ID,
     }
 }
 impl graphql_client::GraphQLQuery for UpdateSecretFields {

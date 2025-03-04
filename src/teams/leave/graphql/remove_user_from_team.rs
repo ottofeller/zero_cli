@@ -4,7 +4,7 @@ pub mod remove_user_from_team {
     #![allow(dead_code)]
     use std::result::Result;
     pub const OPERATION_NAME: &str = "RemoveUserFromTeam";
-    pub const QUERY : & str = "mutation RemoveUserFromTeam(\n  $teamId: String!\n  $userId: String!\n  $ownerTeamUserId: String!\n) {\n  removeUserFromTeam(\n    teamId: $teamId\n    userId: $userId\n    ownerTeamUserId: $ownerTeamUserId\n  ) {\n    teamId\n  }\n}\n" ;
+    pub const QUERY : & str = "mutation RemoveUserFromTeam($teamId: ID!, $userId: ID!) {\n  removeUserFromTeam(teamId: $teamId, userId: $userId) {\n    teamId\n  }\n}\n" ;
     use super::*;
     use serde::{Deserialize, Serialize};
     #[allow(dead_code)]
@@ -18,11 +18,9 @@ pub mod remove_user_from_team {
     #[derive(Serialize)]
     pub struct Variables {
         #[serde(rename = "teamId")]
-        pub team_id: String,
+        pub team_id: ID,
         #[serde(rename = "userId")]
-        pub user_id: String,
-        #[serde(rename = "ownerTeamUserId")]
-        pub owner_team_user_id: String,
+        pub user_id: ID,
     }
     impl Variables {}
     #[derive(Deserialize)]
@@ -33,7 +31,7 @@ pub mod remove_user_from_team {
     #[derive(Deserialize)]
     pub struct RemoveUserFromTeamRemoveUserFromTeam {
         #[serde(rename = "teamId")]
-        pub team_id: String,
+        pub team_id: ID,
     }
 }
 impl graphql_client::GraphQLQuery for RemoveUserFromTeam {

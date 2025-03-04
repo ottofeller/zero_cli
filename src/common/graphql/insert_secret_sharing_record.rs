@@ -4,7 +4,7 @@ pub mod insert_secret_sharing_record {
     #![allow(dead_code)]
     use std::result::Result;
     pub const OPERATION_NAME: &str = "InsertSecretSharingRecord";
-    pub const QUERY : & str = "mutation InsertSecretSharingRecord(\n  $expiresAt: String!\n  $passphrase: String!\n  $secretsFieldIds: [String!]!\n) {\n  insertSecretSharingRecord(\n    expiresAt: $expiresAt\n    passphrase: $passphrase\n    secretsFieldIds: $secretsFieldIds\n  ) {\n    id\n  }\n}\n" ;
+    pub const QUERY : & str = "mutation InsertSecretSharingRecord(\n  $expiresAt: String!\n  $passphrase: String!\n  $secretsFieldIds: [ID!]!\n) {\n  insertSecretSharingRecord(\n    expiresAt: $expiresAt\n    passphrase: $passphrase\n    secretsFieldIds: $secretsFieldIds\n  ) {\n    id\n  }\n}\n" ;
     use super::*;
     use serde::{Deserialize, Serialize};
     #[allow(dead_code)]
@@ -21,7 +21,7 @@ pub mod insert_secret_sharing_record {
         pub expires_at: String,
         pub passphrase: String,
         #[serde(rename = "secretsFieldIds")]
-        pub secrets_field_ids: Vec<String>,
+        pub secrets_field_ids: Vec<ID>,
     }
     impl Variables {}
     #[derive(Deserialize)]

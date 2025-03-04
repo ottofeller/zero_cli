@@ -48,7 +48,7 @@ mod view;
 /// The `common` module contains shared functionality and utilities used across different
 /// project-related commands and operations.
 ///
-mod common;
+pub mod common;
 use self::create::ProjectsCreateArgs;
 use self::delete::ProjectsDeleteArgs;
 use self::edit::ProjectsEditArgs;

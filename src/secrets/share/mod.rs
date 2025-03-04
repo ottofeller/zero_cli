@@ -1,4 +1,5 @@
 pub mod graphql;
+
 use crate::common::{
     authorization_headers::authorization_headers,
     colorful_theme::theme,
@@ -9,8 +10,9 @@ use crate::common::{
     },
     keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
 };
+
+use crate::secrets::common::secret_info_by_slug::secret_info_by_slug;
 use crate::secrets::share::graphql::user_secret::{user_secret, UserSecret};
 use chrono::{Duration, Utc};
 use clap::Args;
@@ -21,12 +23,8 @@ use termimad::crossterm::style::{style, Color, Stylize};
 
 #[derive(Args, Debug)]
 pub struct SecretShareArgs {
-    #[clap(
-        short,
-        long,
-        help = "Secret ID (First 4 characters or more are allowed)"
-    )]
-    id: String,
+    #[clap(short, long, help = "Secret slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -41,10 +39,11 @@ pub fn share(args: &SecretShareArgs) {
         None => keyring::get("access_token"),
     };
 
-    let secret_id = query_full_id(QueryType::UserSecret, args.id.clone(), &access_token);
+    let shared_info = secret_info_by_slug(&args.slug, &access_token);
+
     let user_secrets_error_message = format!(
-        "Sharing error. Failed to retrieve secret with ID '{}'.",
-        &args.id
+        "Sharing error. Failed to retrieve secret with slug '{}'.",
+        &args.slug
     );
 
     let secret_details =
@@ -53,7 +52,9 @@ pub fn share(args: &SecretShareArgs) {
             UserSecret::build_query,
             &Client::new(),
             &user_secrets_error_message,
-            user_secret::Variables { id: secret_id },
+            user_secret::Variables {
+                id: shared_info.id.clone(),
+            },
         )
         .user_secret_by_pk
         {
@@ -64,6 +65,11 @@ pub fn share(args: &SecretShareArgs) {
                 std::process::exit(1);
             }
         };
+
+    if secret_details.fields.is_empty() {
+        print_formatted_error("Sharing error. Secret has no fields.");
+        std::process::exit(1);
+    }
 
     let passphrase = match Password::with_theme(&theme())
         .with_prompt("Type a passphrase of at least 6 character:")
@@ -180,11 +186,11 @@ pub fn share(args: &SecretShareArgs) {
     .insert_secret_sharing_record
     .id;
 
-    let secrets_sharing_url = format!("{}/sharing/{}", config.webapp_url, secrets_sharing_id);
+    let secrets_sharing_url = format!("{}/private/{}", config.webapp_url, secrets_sharing_id);
 
     println!(
         "Your link for the shared secret '{}' with the name '{}':",
-        &secret_details.id.to_string()[..4].dark_cyan(),
+        &args.slug.clone().dark_cyan(),
         &secret_details.name,
     );
 

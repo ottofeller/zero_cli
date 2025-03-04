@@ -147,9 +147,8 @@ pub fn create(args: &ProjectsCreateArgs) {
         };
 
         token = Some(create_project::TokenObject {
-            id: None,
             expires_at: token_expires_at,
-            name: Some(token_name),
+            name: token_name,
         });
     } else {
         token = None;

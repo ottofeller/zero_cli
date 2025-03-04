@@ -1,4 +1,4 @@
-mutation SendInvite($teamId: String!, $email: String!) {
+mutation SendInvite($teamId: ID!, $email: String!) {
   sendInviteUserTeam(teamId: $teamId, email: $email) {
     teamId
   }
