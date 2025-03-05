@@ -7,8 +7,8 @@
 mod create;
 /// ## Projects Delete
 ///
-///  The `delete` function allow delete the project using the passed ID.
-///  To confirm the user must enter the first 4 characters of the ID.
+///  The `delete` function allow delete the project using the passed slug.
+///  To confirm the user must enter the slug.
 ///
 mod delete;
 /// ## Projects Edit
@@ -21,7 +21,7 @@ mod edit;
 /// ## Projects List
 ///
 ///  The `list` function displays a list of all projects from personal projects.
-///  If the ID argument is passed, it will show all projects that belong to the specified team.
+///  If the slug argument is passed, it will show all projects that belong to the specified team.
 ///
 mod list;
 /// ## Projects Share
@@ -42,6 +42,13 @@ mod usage;
 ///  Name, owner, number of secrets, and link to view the project page in the Zero web application.
 ///
 mod view;
+
+/// ## Projects Common
+///
+/// The `common` module contains shared functionality and utilities used across different
+/// project-related commands and operations.
+///
+pub mod common;
 use self::create::ProjectsCreateArgs;
 use self::delete::ProjectsDeleteArgs;
 use self::edit::ProjectsEditArgs;

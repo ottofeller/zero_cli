@@ -2,5 +2,12 @@ mutation CreateProject($icon: String!, $name: String!, $token: TokenObject, $slu
   createProject(icon: $icon, name: $name, token: $token, slug: $slug) {
     id
     tokenValue
+
+    project {
+      id
+      teamId
+      slug
+
+    }
   }
 }

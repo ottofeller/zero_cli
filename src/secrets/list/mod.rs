@@ -1,4 +1,5 @@
 mod graphql;
+
 use crate::common::{
     authorization_headers::authorization_headers,
     config::Config,
@@ -7,9 +8,10 @@ use crate::common::{
     lengify::lengify,
     pad_to_column_width::pad_to_column_width,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
     table::table,
 };
+
+use crate::projects::common::project_info_by_slug::project_info_by_slug;
 use crate::secrets::list::graphql::project_secrets::{project_secrets, ProjectSecrets};
 use clap::Args;
 use graphql_client::GraphQLQuery;
@@ -21,9 +23,9 @@ pub struct SecretsListArgs {
     #[clap(
         short,
         long,
-        help = "Project ID (First 4 characters or more are allowed)"
+        help = "Project slug"
     )]
-    id: String,
+    slug: String,
     #[clap(
         short,
         long,
@@ -38,12 +40,12 @@ pub fn list(args: &SecretsListArgs) {
         None => keyring::get("access_token"),
     };
 
-    let project_id = query_full_id(QueryType::Project, args.id.clone(), &access_token);
+    let project_info = project_info_by_slug(&args.slug, &access_token);
     let date_format = &Config::new().date_format;
 
     let project_secrets_error_message = format!(
-        "Failed to retrieve secrets for the project with ID '{}'.",
-        &args.id
+        "Failed to retrieve secrets for the project with slug '{}'.",
+        &args.slug
     );
 
     let project_secrets_response =
@@ -52,7 +54,7 @@ pub fn list(args: &SecretsListArgs) {
             ProjectSecrets::build_query,
             &Client::new(),
             &project_secrets_error_message,
-            project_secrets::Variables { id: project_id },
+            project_secrets::Variables { id: project_info.id },
         )
         .project_by_pk
         {
@@ -67,13 +69,13 @@ pub fn list(args: &SecretsListArgs) {
     let mut secrets_list = Vec::new();
 
     struct ColumnWidthSize {
-        id: usize,
+        slug: usize,
         vendor: usize,
         date: usize,
     }
 
     let mut column_width_size = ColumnWidthSize {
-        id: 5,
+        slug: 5,
         vendor: 6,
         date: 4,
     };
@@ -82,6 +84,10 @@ pub fn list(args: &SecretsListArgs) {
 
     // save the length of the longest column element
     for secret in &project_secrets_response.user_secrets {
+        column_width_size.slug = column_width_size
+            .slug
+            .max(secret.slug.len());
+
         column_width_size.vendor = column_width_size
             .vendor
             .max(secret.vendor.to_string().len());
@@ -95,8 +101,8 @@ pub fn list(args: &SecretsListArgs) {
         secrets_list.push(format!(
             "{}{}{}{}",
             pad_to_column_width(
-                format!("#{}", &secret.id.to_string()[0..4]),
-                column_width_size.id + indentation
+                format!("{}", &secret.slug),
+                column_width_size.slug + indentation
             )
             .green(),
             lengify(&secret.name),
@@ -117,7 +123,7 @@ pub fn list(args: &SecretsListArgs) {
         "You don't have any secrets on this project.",
         format!(
             "{}{}{}{}",
-            pad_to_column_width("ID".to_string(), column_width_size.id + indentation),
+            pad_to_column_width("SLUG".to_string(), column_width_size.slug + indentation),
             lengify("NAME"),
             pad_to_column_width("VENDOR".to_string(), column_width_size.vendor + indentation),
             pad_to_column_width("DATE".to_string(), column_width_size.date + indentation)

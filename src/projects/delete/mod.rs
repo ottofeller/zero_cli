@@ -1,12 +1,10 @@
 mod graphql;
 use crate::common::{
-    authorization_headers::authorization_headers,
-    colorful_theme::theme,
-    execute_graphql_request::execute_graphql_request,
-    keyring::keyring,
+    authorization_headers::authorization_headers, colorful_theme::theme,
+    execute_graphql_request::execute_graphql_request, keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
 };
+use crate::projects::common::project_info_by_slug::project_info_by_slug;
 use crate::projects::delete::graphql::delete_project::{delete_project, DeleteProject};
 use clap::Args;
 use dialoguer::Input;
@@ -16,12 +14,8 @@ use termimad::crossterm::style::Stylize;
 
 #[derive(Args, Debug)]
 pub struct ProjectsDeleteArgs {
-    #[clap(
-        short,
-        long,
-        help = "Project ID (First 4 characters or more are allowed)"
-    )]
-    id: String,
+    #[clap(short, long, help = "Project slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -36,15 +30,16 @@ pub fn delete(args: &ProjectsDeleteArgs) {
         None => keyring::get("access_token"),
     };
 
-    let project_id = query_full_id(QueryType::Project, args.id.clone(), &access_token);
+    let authorization_headers = authorization_headers(&access_token);
+    let delete_project_info = project_info_by_slug(&args.slug, &access_token);
 
     match Input::with_theme(&theme())
         .with_prompt(format!(
             "Type {} to confirm deletion:",
-            project_id.clone().to_string()[..4].green()
+            args.slug.clone().green()
         ))
         .validate_with(|input: &String| -> Result<(), &str> {
-            if input == &project_id.clone().to_string()[..4] {
+            if input == &args.slug.clone() {
                 Ok(())
             } else {
                 Err("Your reply was invalid.")
@@ -62,17 +57,17 @@ pub fn delete(args: &ProjectsDeleteArgs) {
 
     let delete_project_error_message = format!(
         "Deletion failed. Failed to delete a project '{}'.",
-        args.id.clone()
+        args.slug.clone()
     );
 
     let delete_project_response =
         execute_graphql_request::<delete_project::Variables, delete_project::ResponseData>(
-            authorization_headers(&access_token),
+            authorization_headers.clone(),
             DeleteProject::build_query,
             &Client::new(),
             &delete_project_error_message,
             delete_project::Variables {
-                id: project_id.to_string(),
+                id: delete_project_info.id.to_string(),
             },
         )
         .delete_project
@@ -83,5 +78,5 @@ pub fn delete(args: &ProjectsDeleteArgs) {
         std::process::exit(1);
     }
 
-    println!("{} {}", "✔".green(), "Project successfully deleted.")
+    println!("{} Project successfully deleted.", "✔".green());
 }

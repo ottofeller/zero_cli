@@ -1,14 +1,12 @@
 mod graphql;
 
 use crate::common::{
-    authorization_headers::authorization_headers,
-    execute_graphql_request::execute_graphql_request,
-    keyring::keyring,
-    print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
-    read_env_file::read_env_file,
+    authorization_headers::authorization_headers, execute_graphql_request::execute_graphql_request,
+    keyring::keyring, print_formatted_error::print_formatted_error, read_env_file::read_env_file,
     write_env_file::write_env_file,
 };
+
+use crate::secrets::common::secret_info_by_slug::secret_info_by_slug;
 use clap::Args;
 use graphql::view_secret::{view_secret, ViewSecret};
 use graphql_client::GraphQLQuery;
@@ -17,12 +15,8 @@ use termimad::crossterm::style::Stylize;
 
 #[derive(Args, Debug)]
 pub struct SecretDropArgs {
-    #[clap(
-        short,
-        long,
-        help = "Secret ID (First 4 characters or more are allowed)"
-    )]
-    id: String,
+    #[clap(short, long, help = "Secret slug")]
+    slug: String,
     #[clap(short, long, help = "Path to the env file")]
     env_file: String,
     #[clap(
@@ -45,7 +39,7 @@ pub fn drop(args: &SecretDropArgs) {
         None => keyring::get("access_token"),
     };
 
-    let user_secret_id = query_full_id(QueryType::UserSecret, args.id.clone(), &access_token);
+    let secret_info = secret_info_by_slug(&args.slug, &access_token);
 
     let user_secret_fields: Vec<view_secret::ViewSecretViewSecretFieldsSecretFields> =
         execute_graphql_request::<view_secret::Variables, view_secret::ResponseData>(
@@ -54,7 +48,7 @@ pub fn drop(args: &SecretDropArgs) {
             &Client::new(),
             "Dump failed. Failed to retrieve the user's secret field value.",
             view_secret::Variables {
-                secret_id: user_secret_id.to_string(),
+                secret_id: secret_info.id.to_string(),
             },
         )
         .view_secret_fields

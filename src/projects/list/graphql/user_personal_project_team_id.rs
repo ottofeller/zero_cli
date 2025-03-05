@@ -2,8 +2,10 @@
 pub struct UserPersonalProjectTeamId;
 pub mod user_personal_project_team_id {
     #![allow(dead_code)]
+    use std::result::Result;
     pub const OPERATION_NAME: &str = "UserPersonalProjectTeamId";
-    pub const QUERY : & str = "query UserPersonalProjectTeamId($userId: uuid!) {\n   team(where: {_and: [\n    {name: {_eq: \"Personal projects\"}}\n    {ownerUserId: {_eq: $userId}}\n  ]}) {\n    id\n  }\n}\n" ;
+    pub const QUERY : & str = "query UserPersonalProjectTeamId($userId: uuid!) {\n  team(\n    where: {\n      _and: [\n        { name: { _eq: \"Personal projects\" } }\n        { ownerUserId: { _eq: $userId } }\n      ]\n    }\n  ) {\n    id\n    slug\n  }\n}\n" ;
+    use super::*;
     use serde::{Deserialize, Serialize};
     #[allow(dead_code)]
     type Boolean = bool;
@@ -27,6 +29,7 @@ pub mod user_personal_project_team_id {
     #[derive(Deserialize)]
     pub struct UserPersonalProjectTeamIdTeam {
         pub id: uuid,
+        pub slug: String,
     }
 }
 impl graphql_client::GraphQLQuery for UserPersonalProjectTeamId {

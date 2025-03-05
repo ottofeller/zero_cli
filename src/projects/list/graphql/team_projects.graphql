@@ -10,6 +10,7 @@ query TeamProjects($id: uuid!, $userId: uuid!) {
   ) {
     id
     name
+    slug
 
     usageHistories(order_by: { updatedAt: desc }, limit: 1) {
       updatedAt

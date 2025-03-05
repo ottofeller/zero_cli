@@ -47,6 +47,12 @@ mod share;
 ///  secret details, including the secret's URL, name, vendor, last usage, and a list of fields.
 ///
 mod view;
+/// ## Secrets Common
+///
+/// The `common` module contains shared functionality and utilities used across different
+/// secret-related commands and operations.
+///
+mod common;
 use clap::{Parser, Subcommand};
 use create::SecretsCreateArgs;
 use delete::SecretsDeleteArgs;

@@ -8,25 +8,22 @@ use crate::common::print_formatted_error::print_formatted_error;
 use graphql::team_info::{team_info, TeamInfo};
 use graphql_client::GraphQLQuery;
 use reqwest::Client;
-use uuid::Uuid;
 
-pub fn team_info(access_token: &str, team_id: Uuid) -> team_info::TeamInfoTeamByPk {
+pub fn team_info(access_token: &str, slug: String) -> team_info::TeamInfoTeam {
     let error_message = "Failed to retrieve a team info.";
 
-    match execute_graphql_request::<team_info::Variables, team_info::ResponseData>(
+    let result = execute_graphql_request::<team_info::Variables, team_info::ResponseData>(
         authorization_headers(&access_token),
         TeamInfo::build_query,
         &Client::new(),
         error_message,
-        team_info::Variables { team_id },
-    )
-    .team_by_pk
-    {
-        Some(data) => data,
+        team_info::Variables { slug: slug },
+    );
 
-        None => {
-            print_formatted_error(error_message);
-            std::process::exit(1);
-        }
+    if result.team.len() != 1 {
+        print_formatted_error(error_message);
+        std::process::exit(1);
     }
+
+    result.team[0].clone()
 }

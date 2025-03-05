@@ -2,8 +2,10 @@
 pub struct Team;
 pub mod team {
     #![allow(dead_code)]
+    use std::result::Result;
     pub const OPERATION_NAME: &str = "Team";
-    pub const QUERY : & str = "query Team($id: uuid!) {\n  team_by_pk(id: $id) {\n    id\n    name\n    description\n\n    owner {\n      id\n      name\n    }\n\n    members {\n      id\n\n      member {\n        id\n        name\n      }\n    }\n  }\n}\n" ;
+    pub const QUERY : & str = "query Team($id: uuid!) {\n  team_by_pk(id: $id) {\n    id\n    name\n    description\n    slug\n\n    owner {\n      id\n      name\n    }\n\n    members {\n      id\n\n      member {\n        id\n        name\n      }\n    }\n  }\n}\n" ;
+    use super::*;
     use serde::{Deserialize, Serialize};
     #[allow(dead_code)]
     type Boolean = bool;
@@ -27,8 +29,9 @@ pub mod team {
     pub struct TeamTeamByPk {
         pub id: uuid,
         pub name: String,
-        pub description: Option<String>,
-        pub owner: Option<TeamTeamByPkOwner>,
+        pub description: String,
+        pub slug: String,
+        pub owner: TeamTeamByPkOwner,
         pub members: Vec<TeamTeamByPkMembers>,
     }
     #[derive(Deserialize)]

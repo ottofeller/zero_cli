@@ -1,0 +1,14 @@
+query TeamId($slug: String!, $userId: uuid!) {
+  team(
+    where: {
+      _and: [
+        { slug: { _eq: $slug } }
+        { members: { member: { id: { _eq: $userId } } } }
+      ]
+    }
+  ) {
+    id
+    name
+    slug
+  }
+}

@@ -60,7 +60,9 @@ pub fn create(args: &TeamsCreateArgs) {
         }
     };
 
-    let team_id = execute_graphql_request::<create_team::Variables, create_team::ResponseData>(
+    let team_slug = slugify_prompt(&team_name, "Type a slug for the team:");
+
+    execute_graphql_request::<create_team::Variables, create_team::ResponseData>(
         headers.clone(),
         CreateTeam::build_query,
         &client,
@@ -69,27 +71,26 @@ pub fn create(args: &TeamsCreateArgs) {
             team_name
         ),
         create_team::Variables {
-            slug: slugify_prompt(&team_name, "Type a slug for the team:"),
-            team_name,
+            slug: team_slug.clone(),
+            team_name: team_name.clone(),
         },
-    )
-    .create_team
-    .id;
+    );
 
     let text_template = minimad::TextTemplate::from(
         r#"
         ##### **✔ Team successfully created**
         Team link: ${team-link}
-        Team ID: **${team-id}**
+        Team name: **${team_name}**
+        Team slug: **${team-slug}**
         "#,
     );
 
     let mut expander = text_template.expander();
 
     let team_link = style(format!(
-        "{}/teams/{}",
+        "{}/{}/projects",
         Config::new().webapp_url,
-        &team_id.replace("-", "")
+        &team_slug
     ))
     .with(Color::Rgb {
         r: 0,
@@ -100,7 +101,8 @@ pub fn create(args: &TeamsCreateArgs) {
 
     expander
         .set("team-link", &team_link)
-        .set("team-id", &team_id);
+        .set("team_name", &team_name)
+        .set("team-slug", &team_slug);
 
     let mut skin = MadSkin::default();
     skin.bold.set_fg(Color::Green);

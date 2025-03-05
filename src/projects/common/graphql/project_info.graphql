@@ -1,0 +1,13 @@
+query ProjectInfo($slug: String!) {
+  project(where: { slug: { _eq: $slug } }) {
+    id
+    name
+    slug
+
+    team {
+      id
+      name
+      slug
+    }
+  }
+}

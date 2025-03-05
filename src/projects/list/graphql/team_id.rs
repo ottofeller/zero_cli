@@ -1,10 +1,10 @@
 #![allow(clippy::all, warnings)]
-pub struct ProjectInfo;
-pub mod project_info {
+pub struct TeamId;
+pub mod team_id {
     #![allow(dead_code)]
     use std::result::Result;
-    pub const OPERATION_NAME: &str = "ProjectInfo";
-    pub const QUERY : & str = "query ProjectInfo($projectId: uuid!) {\n    project_by_pk(id: $projectId) {\n        id\n        name\n    }\n}\n" ;
+    pub const OPERATION_NAME: &str = "TeamId";
+    pub const QUERY : & str = "query TeamId($slug: String!, $userId: uuid!) {\n  team(\n    where: {\n      _and: [\n        { slug: { _eq: $slug } }\n        { members: { member: { id: { _eq: $userId } } } }\n      ]\n    }\n  ) {\n    id\n    name\n    slug\n  }\n}\n" ;
     use super::*;
     use serde::{Deserialize, Serialize};
     #[allow(dead_code)]
@@ -18,28 +18,30 @@ pub mod project_info {
     type uuid = ::uuid::Uuid;
     #[derive(Serialize)]
     pub struct Variables {
-        #[serde(rename = "projectId")]
-        pub project_id: uuid,
+        pub slug: String,
+        #[serde(rename = "userId")]
+        pub user_id: uuid,
     }
     impl Variables {}
     #[derive(Deserialize)]
     pub struct ResponseData {
-        pub project_by_pk: Option<ProjectInfoProjectByPk>,
+        pub team: Vec<TeamIdTeam>,
     }
     #[derive(Deserialize)]
-    pub struct ProjectInfoProjectByPk {
+    pub struct TeamIdTeam {
         pub id: uuid,
         pub name: String,
+        pub slug: String,
     }
 }
-impl graphql_client::GraphQLQuery for ProjectInfo {
-    type Variables = project_info::Variables;
-    type ResponseData = project_info::ResponseData;
+impl graphql_client::GraphQLQuery for TeamId {
+    type Variables = team_id::Variables;
+    type ResponseData = team_id::ResponseData;
     fn build_query(variables: Self::Variables) -> ::graphql_client::QueryBody<Self::Variables> {
         graphql_client::QueryBody {
             variables,
-            query: project_info::QUERY,
-            operation_name: project_info::OPERATION_NAME,
+            query: team_id::QUERY,
+            operation_name: team_id::OPERATION_NAME,
         }
     }
 }

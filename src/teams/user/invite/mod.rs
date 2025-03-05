@@ -4,7 +4,6 @@ use crate::common::{
     execute_graphql_request::execute_graphql_request,
     keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
     take_user_id_from_token::take_user_id_from_token,
 };
 use crate::teams::common::team_info::team_info;
@@ -17,8 +16,8 @@ use uuid::Uuid;
 
 #[derive(Args, Debug)]
 pub struct UserInviteArgs {
-    #[clap(short, long, help = "Team ID (First 4 characters or more are allowed)")]
-    id: String,
+    #[clap(short, long, help = "Team slug")]
+    slug: String,
     #[clap(short, long, help = "The email of the user to invite")]
     email: String,
     #[clap(
@@ -44,8 +43,7 @@ pub fn invite(args: &UserInviteArgs) {
         }
     };
 
-    let team_id = query_full_id(QueryType::Teams, args.id.clone(), &access_token);
-    let team_info = team_info(&access_token, team_id);
+    let team_info = team_info(&access_token, args.slug.clone());
 
     if team_info.owner_user_id != user_id {
         print_formatted_error(

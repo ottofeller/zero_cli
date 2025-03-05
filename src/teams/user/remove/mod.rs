@@ -19,8 +19,8 @@ use uuid::Uuid;
 
 #[derive(Args, Debug)]
 pub struct UserRemoveArgs {
-    #[clap(short, long, help = "Team ID (First 4 characters or more are allowed)")]
-    id: String,
+    #[clap(short, long, help = "Team slug")]
+    slug: String,
     #[clap(short, long, help = "User ID (First 4 characters or more are allowed)")]
     user_id: String,
     #[clap(
@@ -46,9 +46,8 @@ pub fn remove(args: &UserRemoveArgs) {
         }
     };
 
-    let team_id = query_full_id(QueryType::Teams, args.id.clone(), &access_token);
     let user_id_to_be_deleted = query_full_id(QueryType::User, args.user_id.clone(), &access_token);
-    let team_info = team_info(&access_token, team_id);
+    let team_info = team_info(&access_token, args.slug.clone());
 
     // Check if the user is the owner of the team
     if team_info.owner_user_id != user_id {
@@ -72,14 +71,11 @@ pub fn remove(args: &UserRemoveArgs) {
 
     // Confirm deletion
     let input: String = Input::with_theme(&theme())
-        .with_prompt(format!(
-            "Type {} to confirm deletion:",
-            &team_id.to_string()[..4]
-        ))
+        .with_prompt(format!("Type {} to confirm deletion:", &args.slug))
         .interact_text()
         .expect("Failed to read the user's reply.");
 
-    if input != team_id.to_string()[..4] {
+    if input != args.slug {
         println!(
             "{}",
             format!("X Sorry your reply was invalid: You entered {}.", input).red()
@@ -99,7 +95,7 @@ pub fn remove(args: &UserRemoveArgs) {
         &Client::new(),
         remove_team_error_message,
         remove_user_from_team::Variables {
-            team_id: team_id.to_string(),
+            team_id: team_info.id.to_string(),
             user_id: user_id_to_be_deleted.to_string(),
         },
     )
@@ -111,7 +107,7 @@ pub fn remove(args: &UserRemoveArgs) {
             "{} User '{}' has not been removed from the '{}' team.",
             "❌".red(),
             user_id_to_be_deleted.to_string(),
-            team_id.to_string()
+            team_info.id.to_string()
         );
 
         std::process::exit(0);

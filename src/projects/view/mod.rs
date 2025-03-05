@@ -7,8 +7,8 @@ use crate::common::{
     format_relative_time::format_relative_time,
     keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
 };
+use crate::projects::common::project_info_by_slug::project_info_by_slug;
 use crate::projects::view::graphql::project_details::{project_details, ProjectDetails};
 use graphql_client::GraphQLQuery;
 use reqwest::Client;
@@ -19,12 +19,8 @@ use termimad::{
 
 #[derive(Args, Debug)]
 pub struct ProjectsViewArgs {
-    #[clap(
-        short,
-        long,
-        help = "Project ID (First 4 characters or more are allowed)"
-    )]
-    id: String,
+    #[clap(short, long, help = "Project slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -39,11 +35,11 @@ pub fn view(args: &ProjectsViewArgs) {
         None => keyring::get("access_token"),
     };
 
-    let project_id = query_full_id(QueryType::Project, args.id.clone(), &access_token);
+    let project_info = project_info_by_slug(&args.slug, &access_token);
 
     let project_details_error_message = format!(
-        "Failed to retrieve detailed information for the project with ID '{}'.",
-        &args.id
+        "Failed to retrieve detailed information for the project with slug '{}'.",
+        &args.slug
     );
 
     let project_details =
@@ -52,11 +48,13 @@ pub fn view(args: &ProjectsViewArgs) {
             ProjectDetails::build_query,
             &Client::new(),
             &project_details_error_message,
-            project_details::Variables { id: project_id },
+            project_details::Variables {
+                id: project_info.id,
+            },
         )
         .project;
 
-    let current_project_info = match project_details.first() {
+    let current_project_details = match project_details.first() {
         Some(data) => data,
 
         None => {
@@ -65,7 +63,7 @@ pub fn view(args: &ProjectsViewArgs) {
         }
     };
 
-    let last_usage = if let Some(usage_history) = &current_project_info.usage_histories.first() {
+    let last_usage = if let Some(usage_history) = &current_project_details.usage_histories.first() {
         match format_relative_time(&usage_history.created_at.to_string()) {
             Ok(relative_time) => relative_time,
 
@@ -83,25 +81,35 @@ pub fn view(args: &ProjectsViewArgs) {
     };
 
     let markdown_text = format!(
-        "**Name**: {} ({})\n**Secrets**: {}\n**Integrations**: {}\n**Team**: {}\n**URL**: {}\n**Last used**: {}",
-        &current_project_info.name,
-        &current_project_info.id,
-        if let Some(secret_count) = &current_project_info.user_secrets_aggregate.aggregate {
+        "**Name**: {}\n**Slug**: {}\n**Secrets**: {}\n**Integrations**: {}\n**Team**: {}\n**URL**: {}\n**Last used**: {}",
+        &project_info.name,
+        &project_info.slug,
+        if let Some(secret_count) = &current_project_details.user_secrets_aggregate.aggregate {
             secret_count.count
         } else {
             0
         },
-        if let Some(integrations_count) = &current_project_info.integration_installations_aggregate.aggregate {
+        if let Some(integrations_count) = &current_project_details.integration_installations_aggregate.aggregate {
             integrations_count.count
         } else {
             0
         },
-        if let Some(team) = &current_project_info.team {
-            String::from(team.name.clone())
-        } else {
-            String::from("-")
+        match &project_info.team {
+            Some(team) => team.name.clone(),
+            None => {
+                print_formatted_error("Project must belong to a team");
+                std::process::exit(1);
+            }
         },
-        style(format!("{}/projects/{}", Config::new().webapp_url, &current_project_info.id.to_string().replace("-", ""))).with(Color::Rgb {
+        style(format!("{}/{}/{}", Config::new().webapp_url,
+        match &project_info.team {
+            Some(team) => team.slug.clone(),
+            None => {
+                print_formatted_error("Project must belong to a team");
+                std::process::exit(1);
+            }
+        },
+        &project_info.slug)).with(Color::Rgb {
             r: 0,
             g: 135,
             b: 255,

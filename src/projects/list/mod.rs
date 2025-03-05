@@ -1,19 +1,17 @@
 pub mod graphql;
 use crate::common::{
-    authorization_headers::authorization_headers,
-    execute_graphql_request::execute_graphql_request,
-    format_relative_time::format_relative_time,
-    keyring::keyring,
-    lengify::lengify,
-    pad_to_column_width::pad_to_column_width,
-    print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
-    table::table,
+    authorization_headers::authorization_headers, colorful_theme::theme, config::Config,
+    execute_graphql_request::execute_graphql_request, format_relative_time::format_relative_time,
+    keyring::keyring, lengify::lengify, pad_to_column_width::pad_to_column_width,
+    print_formatted_error::print_formatted_error, table::table,
     take_user_id_from_token::take_user_id_from_token,
 };
-use crate::projects::list::graphql::team_projects::{team_projects, TeamProjects};
-use crate::projects::list::graphql::user_personal_project_team_id::{
-    user_personal_project_team_id, UserPersonalProjectTeamId,
+use dialoguer::Select;
+
+use crate::projects::list::graphql::{
+    team_id::{team_id, TeamId},
+    team_projects::{team_projects, TeamProjects},
+    user_personal_project_team_id::{user_personal_project_team_id, UserPersonalProjectTeamId},
 };
 use clap::Args;
 use graphql_client::GraphQLQuery;
@@ -23,12 +21,8 @@ use uuid::Uuid;
 
 #[derive(Args, Debug)]
 pub struct ProjectsListArgs {
-    #[clap(
-        short,
-        long,
-        help = "Team ID (First 4 characters or more are allowed), not required"
-    )]
-    id: Option<String>,
+    #[clap(short, long, help = "Team slug")]
+    slug: Option<String>,
     #[clap(
         short,
         long,
@@ -56,10 +50,58 @@ pub fn list(args: &ProjectsListArgs) {
     };
 
     let team_id;
+    let team_slug;
 
-    match &args.id {
-        Some(id) => {
-            team_id = query_full_id(QueryType::Teams, id.clone(), &access_token);
+    match &args.slug {
+        Some(slug) => {
+            let team_by_slug_response =
+                execute_graphql_request::<team_id::Variables, team_id::ResponseData>(
+                    authorization_headers.clone(),
+                    TeamId::build_query,
+                    &client,
+                    &format!("Team with slug '{}' not found.", &slug),
+                    team_id::Variables {
+                        slug: slug.clone(),
+                        user_id,
+                    },
+                )
+                .team;
+
+            let options: Vec<String> = team_by_slug_response
+                .iter()
+                .map(|team| team.name.clone())
+                .collect();
+
+            let selected_index = if options.len() < 1 {
+                print_formatted_error(&format!("Team with slug '{}' not found.", &slug));
+                std::process::exit(1);
+            } else if options.len() == 1 {
+                0
+            } else {
+                match Select::with_theme(&theme())
+                    .with_prompt(format!(
+                        "Select the team: {}",
+                        "Use <Up>/<Down> to navigate and <Enter>/<Space> to select".dark_grey()
+                    ))
+                    .default(0)
+                    .items(&options)
+                    .max_length(Config::new().items_per_page)
+                    .interact()
+                {
+                    Ok(selected_index) => selected_index,
+
+                    Err(_) => {
+                        print_formatted_error(
+                            "Project list failed. Failed to read expiration time.",
+                        );
+                        std::process::exit(1);
+                    }
+                }
+            };
+
+            let team_info = &team_by_slug_response[selected_index];
+            team_id = team_info.id.clone();
+            team_slug = team_info.slug.clone();
         }
 
         None => {
@@ -81,6 +123,7 @@ pub fn list(args: &ProjectsListArgs) {
 
             if let Some(team_data) = personal_team.first() {
                 team_id = team_data.id.clone();
+                team_slug = team_data.slug.clone();
             } else {
                 print_formatted_error(&user_personal_project_team_id_error_message);
                 std::process::exit(1);
@@ -102,12 +145,12 @@ pub fn list(args: &ProjectsListArgs) {
         .project;
 
     struct ColumnWidthSize {
-        id: usize,
+        slug: usize,
         last_usage: usize,
     }
 
     let mut column_width_size = ColumnWidthSize {
-        id: 5,
+        slug: 5,
         last_usage: 10,
     };
 
@@ -121,6 +164,8 @@ pub fn list(args: &ProjectsListArgs) {
                     .len(),
             );
         }
+
+        column_width_size.slug = column_width_size.slug.max(project.slug.len());
     }
 
     let mut list = Vec::new();
@@ -145,8 +190,8 @@ pub fn list(args: &ProjectsListArgs) {
         list.push(format!(
             "{}{}{}",
             pad_to_column_width(
-                format!("#{}", &project.id.to_string()[..4]),
-                column_width_size.id + indentation
+                format!("{}", &project.slug),
+                column_width_size.slug + indentation
             )
             .green(),
             lengify(&project.name),
@@ -159,14 +204,11 @@ pub fn list(args: &ProjectsListArgs) {
 
     table(
         list,
-        format!(
-            "Showing projects in {} team",
-            &team_id.to_string().bold().dark_cyan()
-        ),
+        format!("Showing projects in {} team", &team_slug.bold().dark_cyan()),
         "You don't have any projects on this team.",
         format!(
             "{}{}{}",
-            pad_to_column_width("ID".to_string(), column_width_size.id + indentation),
+            pad_to_column_width("SLUG".to_string(), column_width_size.slug + indentation),
             lengify("NAME"),
             pad_to_column_width(
                 "LAST USAGE".to_string(),

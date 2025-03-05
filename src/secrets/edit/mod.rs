@@ -1,24 +1,23 @@
 mod graphql;
+
 use crate::common::{
-    authorization_headers::authorization_headers,
-    colorful_theme::theme,
-    config::Config,
-    execute_graphql_request::execute_graphql_request,
-    keyring::keyring,
-    print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
-    slugify::slugify_prompt,
-    validate_name::validate_name,
-    validate_secret_field_name::validate_secret_field_name,
+    authorization_headers::authorization_headers, colorful_theme::theme, config::Config,
+    execute_graphql_request::execute_graphql_request, keyring::keyring,
+    print_formatted_error::print_formatted_error, slugify::slugify_prompt,
+    validate_name::validate_name, validate_secret_field_name::validate_secret_field_name,
     vendors::Vendors,
 };
+
 use clap::Args;
 use dialoguer::{Input, Password, Select};
 use graphql::update_secret_fields::{update_secret_fields, UpdateSecretFields};
 use graphql::update_secret_info::{update_secret_info, UpdateSecretInfo};
+
 use graphql::user_secret_and_already_taken_user_secret_names::{
     user_secret_and_already_taken_user_secret_names, UserSecretAndAlreadyTakenUserSecretNames,
 };
+
+use crate::secrets::common::secret_info_by_slug::secret_info_by_slug;
 use graphql_client::GraphQLQuery;
 use reqwest::Client;
 use strum::IntoEnumIterator;
@@ -26,12 +25,8 @@ use termimad::crossterm::style::{style, Color, Stylize};
 
 #[derive(Args, Debug)]
 pub struct SecretsEditArgs {
-    #[clap(
-        short,
-        long,
-        help = "Secret ID (First 4 characters or more are allowed)"
-    )]
-    id: String,
+    #[clap(short, long, help = "Secret slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -54,9 +49,10 @@ pub fn edit(args: &SecretsEditArgs) {
         None => keyring::get("access_token"),
     };
 
-    let secret_id = query_full_id(QueryType::UserSecret, args.id.clone(), &access_token);
     let client = Client::new();
     let headers = authorization_headers(&access_token);
+    let edited_secret = secret_info_by_slug(&args.slug, &access_token);
+    let secret_slug;
     let query_secret_info_error_message = "Editing failed. Failed to retrieve the secret info.";
 
     let secret_info = match execute_graphql_request::<
@@ -67,7 +63,9 @@ pub fn edit(args: &SecretsEditArgs) {
         UserSecretAndAlreadyTakenUserSecretNames::build_query,
         &client,
         query_secret_info_error_message,
-        user_secret_and_already_taken_user_secret_names::Variables { id: secret_id },
+        user_secret_and_already_taken_user_secret_names::Variables {
+            id: edited_secret.id.clone(),
+        },
     )
     .user_secret_by_pk
     {
@@ -167,6 +165,8 @@ pub fn edit(args: &SecretsEditArgs) {
         let update_secret_field_error_message =
             "Editing failed. Failed to update the secret field.";
 
+        secret_slug = slugify_prompt(&args.slug, "Type a slug for the secret:");
+
         let updated_secret_field_id = execute_graphql_request::<
             update_secret_fields::Variables,
             update_secret_fields::ResponseData,
@@ -177,7 +177,7 @@ pub fn edit(args: &SecretsEditArgs) {
             update_secret_field_error_message,
             update_secret_fields::Variables {
                 id: secret_info.id.to_string(),
-                slug: slugify_prompt(&secret_info.name, "Type a slug for the secret:"),
+                slug: secret_slug.clone(),
                 name: secret_info.name,
                 user_secret_fields: updated_user_secret_fields,
             },
@@ -238,9 +238,11 @@ pub fn edit(args: &SecretsEditArgs) {
         };
 
         let update_secret_error_message = format!(
-            "Editing failed. Failed to update the secret with ID '{}'.",
-            args.id.clone()
+            "Editing failed. Failed to update the secret with slug '{}'.",
+            args.slug.clone()
         );
+
+        secret_slug = slugify_prompt(&args.slug, "Type a slug for the secret:");
 
         // Don't forget add to generated query [serde(skip_serializing_if = "Option::is_none")] if you re-generate query
         execute_graphql_request::<update_secret_info::Variables, update_secret_info::ResponseData>(
@@ -253,10 +255,7 @@ pub fn edit(args: &SecretsEditArgs) {
                 set: update_secret_info::userSecret_set_input {
                     name: Some(new_secret_name.to_owned()),
                     vendor: Some(new_secret_vendor),
-                    slug: Some(slugify_prompt(
-                        &new_secret_name,
-                        "Type a slug for the secret:",
-                    )),
+                    slug: Some(secret_slug.clone()),
                     note: None,
                 },
             },
@@ -273,10 +272,17 @@ pub fn edit(args: &SecretsEditArgs) {
     println!(
         "{}",
         style(format!(
-            "{}/projects/{}/secrets/{}",
+            "{}/{}/{}/{}",
             config.webapp_url,
-            secret_info.project_id.to_string().replace("-", ""),
-            secret_info.id.to_string().replace("-", "")
+            match &edited_secret.project.team {
+                Some(team) => team.slug.clone(),
+                None => {
+                    print_formatted_error("Project must belong to a team");
+                    std::process::exit(1);
+                }
+            },
+            &edited_secret.project.slug,
+            &secret_slug,
         ))
         .with(Color::Rgb {
             r: 0,

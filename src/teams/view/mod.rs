@@ -5,8 +5,8 @@ use crate::common::{
     execute_graphql_request::execute_graphql_request,
     keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
 };
+use crate::teams::common::team_info::team_info;
 use clap::Args;
 use graphql::team::{team, Team};
 use graphql_client::GraphQLQuery;
@@ -18,8 +18,8 @@ use termimad::{
 
 #[derive(Args, Debug)]
 pub struct TeamViewArgs {
-    #[clap(short, long, help = "Team ID (First 4 characters or more are allowed)")]
-    id: String,
+    #[clap(short, long, help = "Team slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -34,11 +34,11 @@ pub fn view(args: &TeamViewArgs) {
         None => keyring::get("access_token"),
     };
 
-    let team_id = query_full_id(QueryType::Teams, args.id.clone(), &access_token);
+    let team_info = team_info(&access_token, args.slug.clone());
 
     let team_error_message = format!(
-        "Failed to retrieve team details with ID '{}'.",
-        &team_id.to_string()[..4]
+        "Failed to retrieve team details with slug '{}'.",
+        &team_info.slug
     );
 
     let team_details = match execute_graphql_request::<team::Variables, team::ResponseData>(
@@ -46,7 +46,7 @@ pub fn view(args: &TeamViewArgs) {
         Team::build_query,
         &Client::new(),
         &team_error_message,
-        team::Variables { id: team_id },
+        team::Variables { id: team_info.id },
     )
     .team_by_pk
     {
@@ -69,11 +69,11 @@ pub fn view(args: &TeamViewArgs) {
     };
 
     let markdown_text = format!(
-        "**URL**: {} \n**Name**: {} \n**Description**: {}\n**Owner**: {}\n**Members**:\n{}",
+        "**URL**: {} \n**Name**: {} \n**Slug**: {} \n**Description**: {}\n**Owner**: {}\n**Members**:\n{}",
         style(format!(
-            "{}/teams/{}",
+            "{}/{}",
             Config::new().webapp_url,
-            team_details.id
+            team_details.slug
         ))
         .with(Color::Rgb {
             r: 0,
@@ -81,14 +81,9 @@ pub fn view(args: &TeamViewArgs) {
             b: 255,
         }),
         &team_details.name,
-        match &team_details.description {
-            Some(description) => description,
-            None => "-",
-        },
-        match &team_details.owner {
-            Some(owner) => &owner.name,
-            None => "Owner not found",
-        },
+        &team_details.slug,
+        &team_details.description,
+        &team_details.owner.name,
         &members.join(""),
     );
 

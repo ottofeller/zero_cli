@@ -1,17 +1,24 @@
 mod graphql;
-
 use crate::common::slugify::slugify_prompt;
+
 use crate::common::{
     authorization_headers::authorization_headers, colorful_theme::theme, config::Config,
     execute_graphql_request::execute_graphql_request, keyring::keyring,
     print_formatted_error::print_formatted_error, validate_name::validate_name,
 };
-use crate::projects::create::graphql::create_project::{create_project, CreateProject};
+
 use chrono::{Duration, Utc};
 use clap::Args;
 use dialoguer::{console::Style, theme::ColorfulTheme, Confirm, Input, Select, Sort};
+
+use graphql::{
+    create_project::{create_project, CreateProject},
+    team_slug::{team_slug, TeamSlug},
+};
+
 use graphql_client::GraphQLQuery;
 use reqwest::Client;
+
 use termimad::{
     crossterm::style::{style, Color, Stylize},
     minimad, MadSkin,
@@ -53,9 +60,7 @@ pub fn create(args: &ProjectsCreateArgs) {
         None => {
             match Input::with_theme(&theme())
                 .with_prompt("Type a project name:")
-                .validate_with(|input: &String| -> Result<(), &str> {
-                    validate_name(&input)
-                })
+                .validate_with(|input: &String| -> Result<(), &str> { validate_name(&input) })
                 .interact()
             {
                 Ok(new_name) => &new_name.clone(),
@@ -141,9 +146,8 @@ pub fn create(args: &ProjectsCreateArgs) {
         };
 
         token = Some(create_project::TokenObject {
-            id: None,
             expires_at: token_expires_at,
-            name: Some(token_name),
+            name: token_name,
         });
     } else {
         token = None;
@@ -183,6 +187,41 @@ pub fn create(args: &ProjectsCreateArgs) {
         )
         .create_project;
 
+    let project_team_error_message = format!(
+        "Creation failed. Failed to create a project with the name '{}'.",
+        project_name.clone()
+    );
+
+    let project_team_id = match &project_response.project {
+        Some(project) => project.team_id,
+
+        None => {
+            print_formatted_error("Project must belong to a team");
+            std::process::exit(1);
+        }
+    };
+
+    let project_team_response =
+        execute_graphql_request::<team_slug::Variables, team_slug::ResponseData>(
+            headers.clone(),
+            TeamSlug::build_query,
+            &client,
+            &project_team_error_message,
+            team_slug::Variables {
+                id: project_team_id.clone(),
+            },
+        )
+        .team_by_pk;
+
+    let project_team_slug = match project_team_response {
+        Some(team_info) => team_info.slug,
+
+        None => {
+            print_formatted_error("Project must belong to a team");
+            std::process::exit(1);
+        }
+    };
+
     // MD template for the project creation message
     let text_template = if is_token_needed {
         minimad::TextTemplate::from(
@@ -190,7 +229,7 @@ pub fn create(args: &ProjectsCreateArgs) {
         ##### ✔ Project successfully created
         ${description}
         **Project link**: ${project-link}
-        **Project ID for CLI**: ${short-project-id}
+        **Project slug for CLI**: ${project-slug}
 
         > *Please make sure to store this token in a safe place.*
         > *If you ever lose or forget this token, you can regenerate it.*
@@ -203,15 +242,15 @@ pub fn create(args: &ProjectsCreateArgs) {
         ##### ✔ Project successfully created
         ${description}
         **Project link**: ${project-link}
-        **Project ID for CLI**: ${short-project-id}
+        **Project slug for CLI**: ${project-slug}
         "#,
         )
     };
 
     let mut expander = text_template.expander();
 
-    let project_id = match project_response.id {
-        Some(id) => id,
+    let project_slug = match project_response.project {
+        Some(project) => project.slug.clone(),
 
         None => {
             print_formatted_error(&create_project_error_message);
@@ -222,9 +261,10 @@ pub fn create(args: &ProjectsCreateArgs) {
     let description = format!("You created the project named '{}'.", &project_name);
 
     let project_link = style(format!(
-        "{}/projects/{}",
+        "{}/{}/{}",
         Config::new().webapp_url,
-        &project_id.to_string().replace("-", "")
+        &project_team_slug,
+        &project_slug
     ))
     .with(Color::Rgb {
         r: 0,
@@ -233,14 +273,12 @@ pub fn create(args: &ProjectsCreateArgs) {
     })
     .to_string();
 
-    let styled_short_id = format!("{}", &project_id[..4].with(Color::Green));
-    let styled_project_id = format!("{}", &project_id.with(Color::Green));
+    let styled_slug: String = format!("{}", &project_slug.with(Color::Green));
 
     expander
         .set("description", &description)
         .set("project-link", &project_link)
-        .set("project-id", &styled_project_id)
-        .set("short-project-id", &styled_short_id);
+        .set("project-slug", &styled_slug);
 
     let mut skin = MadSkin::default();
     skin.headers[4].set_fg(Color::Green);

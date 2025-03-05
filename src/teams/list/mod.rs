@@ -87,12 +87,14 @@ pub fn list(args: &TeamListArgs) {
     let mut list = Vec::new();
 
     struct ColumnWidthSize {
+        slug: usize,
         id: usize,
         members: usize,
         owner: usize,
     }
 
     let mut column_width_size = ColumnWidthSize {
+        slug: 5,
         id: 5,
         members: 7,
         owner: 5,
@@ -122,16 +124,21 @@ pub fn list(args: &TeamListArgs) {
                 );
 
                 column_width_size.owner = column_width_size.owner.max(team.owner.name.len());
+                column_width_size.slug = column_width_size.slug.max(team.slug.len());
             }
 
             for team in my_teams {
                 list.push(format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     pad_to_column_width(
                         format!("#{}", &team.id.to_string()[0..4]),
                         column_width_size.id + indentation
                     )
                     .green(),
+                    pad_to_column_width(
+                        format!("{}", &team.slug),
+                        column_width_size.slug + indentation
+                    ),
                     lengify(&team.name),
                     pad_to_column_width(
                         match &team.members_aggregate.aggregate {
@@ -176,16 +183,21 @@ pub fn list(args: &TeamListArgs) {
                 );
 
                 column_width_size.owner = column_width_size.owner.max(team.owner.name.len());
+                column_width_size.slug = column_width_size.slug.max(team.slug.len());
             }
 
             for team in shared_teams {
                 list.push(format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     pad_to_column_width(
                         format!("#{}", &team.id.to_string()[0..4]),
                         column_width_size.id + indentation
                     )
                     .green(),
+                    pad_to_column_width(
+                        format!("{}", &team.slug),
+                        column_width_size.slug + indentation
+                    ),
                     lengify(&team.name),
                     pad_to_column_width(
                         match &team.members_aggregate.aggregate {
@@ -220,8 +232,9 @@ pub fn list(args: &TeamListArgs) {
         ),
         "You don't have any teams yet.",
         format!(
-            "{}{}{}{}",
+            "{}{}{}{}{}",
             pad_to_column_width("ID".to_string(), column_width_size.id + indentation),
+            pad_to_column_width("SLUG".to_string(), column_width_size.slug + indentation),
             lengify("NAME"),
             pad_to_column_width(
                 "MEMBERS".to_string(),

@@ -6,9 +6,9 @@ use crate::common::{
     keyring::keyring,
     pad_to_column_width::pad_to_column_width,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
     table::table,
 };
+use crate::projects::common::project_info_by_slug::project_info_by_slug;
 use crate::projects::usage::list::graphql::project_usage::{project_usage, ProjectUsage};
 use clap::Args;
 use graphql_client::GraphQLQuery;
@@ -20,9 +20,9 @@ pub struct ProjectsUsageListArgs {
     #[clap(
         short,
         long,
-        help = "Project ID (First 4 characters or more are allowed)"
+        help = "Project slug"
     )]
-    id: String,
+    slug: String,
     #[clap(
         short,
         long,
@@ -37,12 +37,12 @@ pub fn usage(args: &ProjectsUsageListArgs) {
         None => keyring::get("access_token"),
     };
 
-    let project_id = query_full_id(QueryType::Project, args.id.clone(), &access_token);
+    let project_info = project_info_by_slug(&args.slug, &access_token);
     let date_format = &Config::new().date_format;
 
     let project_usage_error_message = format!(
-        "Failed to retrieve usage statistics for the project with ID '{}'.",
-        &args.id
+        "Failed to retrieve usage statistics for the project with slug '{}'.",
+        &args.slug
     );
 
     let project_usage_response =
@@ -51,7 +51,7 @@ pub fn usage(args: &ProjectsUsageListArgs) {
             ProjectUsage::build_query,
             &Client::new(),
             &project_usage_error_message,
-            project_usage::Variables { id: project_id },
+            project_usage::Variables { id: project_info.id },
         )
         .project;
 

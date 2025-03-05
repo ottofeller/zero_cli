@@ -1,12 +1,10 @@
 mod graphql;
 use crate::common::{
-    authorization_headers::authorization_headers,
-    colorful_theme::theme,
-    execute_graphql_request::execute_graphql_request,
-    keyring::keyring,
+    authorization_headers::authorization_headers, colorful_theme::theme,
+    execute_graphql_request::execute_graphql_request, keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
 };
+use crate::teams::common::team_info::team_info;
 use clap::Args;
 use dialoguer::Input;
 use graphql::delete_team::{delete_team, DeleteTeam};
@@ -16,8 +14,8 @@ use termimad::crossterm::style::Stylize;
 
 #[derive(Args, Debug)]
 pub struct TeamsDeleteArgs {
-    #[clap(short, long, help = "Team ID (First 4 characters or more are allowed)")]
-    id: String,
+    #[clap(short, long, help = "Team slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -32,19 +30,16 @@ pub fn delete(args: &TeamsDeleteArgs) {
         None => keyring::get("access_token"),
     };
 
-    let team_id = query_full_id(QueryType::Teams, args.id.clone(), &access_token);
     let authorization_headers = authorization_headers(&access_token);
     let client = Client::new();
+    let team_info = team_info(&access_token, args.slug.clone());
 
     let input: String = Input::with_theme(&theme())
-        .with_prompt(format!(
-            "Type {} to confirm deletion:",
-            &team_id.to_string()[..4]
-        ))
+        .with_prompt(format!("Type {} to confirm deletion:", &args.slug))
         .interact_text()
         .expect("Deletion failed. Failed to read the user's reply.");
 
-    if input != team_id.to_string()[..4] {
+    if input != args.slug {
         println!(
             "{}",
             format!("X Sorry your reply was invalid: You entered {}.", input).red()
@@ -54,8 +49,8 @@ pub fn delete(args: &TeamsDeleteArgs) {
     }
 
     let remove_team_error_message = format!(
-        "Deletion failed. Failed to delete the team with ID '{}'.",
-        args.id.clone()
+        "Deletion failed. Failed to delete the team with slug '{}'.",
+        args.slug
     );
 
     let remove_team_response =
@@ -64,7 +59,7 @@ pub fn delete(args: &TeamsDeleteArgs) {
             DeleteTeam::build_query,
             &client,
             &remove_team_error_message,
-            delete_team::Variables { id: team_id },
+            delete_team::Variables { id: team_info.id },
         )
         .delete_team_by_pk;
 

@@ -3,6 +3,7 @@ query Team($id: uuid!) {
     id
     name
     description
+    slug
 
     owner {
       id

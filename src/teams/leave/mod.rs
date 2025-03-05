@@ -5,7 +5,6 @@ use crate::common::{
     execute_graphql_request::execute_graphql_request,
     keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
     take_user_id_from_token::take_user_id_from_token,
 };
 use crate::teams::common::team_info::team_info;
@@ -19,8 +18,8 @@ use uuid::Uuid;
 
 #[derive(Args, Debug)]
 pub struct TeamLeaveArgs {
-    #[clap(short, long, help = "Team ID (First 4 characters or more are allowed)")]
-    id: String,
+    #[clap(short, long, help = "Team slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -35,8 +34,6 @@ pub fn leave(args: &TeamLeaveArgs) {
         None => keyring::get("access_token"),
     };
 
-    let team_id = query_full_id(QueryType::Teams, args.id.clone(), &access_token);
-
     let user_id = match Uuid::parse_str(&take_user_id_from_token(&access_token)) {
         Ok(uuid) => uuid,
 
@@ -49,12 +46,12 @@ pub fn leave(args: &TeamLeaveArgs) {
     let input: String = Input::with_theme(&theme())
         .with_prompt(format!(
             "Type {} to confirm leaving the team:",
-            &team_id.to_string()[..4]
+            &args.slug
         ))
         .interact_text()
         .expect("Failed to read the user's reply.");
 
-    if input != team_id.to_string()[..4] {
+    if input != args.slug {
         println!(
             "{}",
             format!("X Sorry your reply was invalid: You entered {}.", input).red()
@@ -63,7 +60,7 @@ pub fn leave(args: &TeamLeaveArgs) {
         std::process::exit(0);
     }
 
-    let team_info = team_info(&access_token, team_id);
+    let team_info = team_info(&access_token, args.slug.clone());
     let leave_team_error_message = "Failed to leave the team.";
 
     let leave_team_id = execute_graphql_request::<

@@ -4,7 +4,7 @@ use rexpect::spawn;
 #[test]
 fn test_secrets_create_with_one_field() -> Result<(), Error> {
     let mut p = spawn(
-        "./target/debug/zero-cli secrets create --id dc1c",
+        "./target/debug/zero-cli secrets create --slug cli-secrets",
         Some(15000),
     )?;
 
@@ -29,7 +29,7 @@ fn test_secrets_create_with_one_field() -> Result<(), Error> {
 #[test]
 fn test_secrets_create_with_many_fields() -> Result<(), Error> {
     let mut p = spawn(
-        "./target/debug/zero-cli secrets create --id dc1c",
+        "./target/debug/zero-cli secrets create --slug cli-secrets",
         Some(15000),
     )?;
 
@@ -65,12 +65,12 @@ fn test_secrets_create_with_many_fields() -> Result<(), Error> {
 #[test]
 fn test_secrets_delete() -> Result<(), Error> {
     let mut p = spawn(
-        "./target/debug/zero-cli secrets delete --id fc2d",
+        "./target/debug/zero-cli secrets delete --slug envs-for-test",
         Some(15000),
     )?;
 
-    p.exp_string("Type fc2d to confirm deletion")?;
-    p.send_line("fc2d")?;
+    p.exp_string("Type envs-for-test to confirm deletion")?;
+    p.send_line("envs-for-test")?;
     p.exp_string("Secret successfully deleted")?;
     Ok(())
 }
@@ -78,7 +78,7 @@ fn test_secrets_delete() -> Result<(), Error> {
 #[test]
 fn test_secrets_edit() -> Result<(), Error> {
     let mut p = spawn(
-        "./target/debug/zero-cli secrets edit --id fc1d5",
+        "./target/debug/zero-cli secrets edit --slug keys-for-test",
         Some(15000),
     )?;
 
@@ -95,11 +95,11 @@ fn test_secrets_edit() -> Result<(), Error> {
 #[test]
 fn test_secrets_list() -> Result<(), Error> {
     let mut p = spawn(
-        "./target/debug/zero-cli secrets list --id dc1c",
+        "./target/debug/zero-cli secrets list --slug cli-secrets",
         Some(15000),
     )?;
 
-    p.exp_string("#fc3d")?;
+    p.exp_string("keys-for-test")?;
     p.exp_string("list secret")?;
     Ok(())
 }
@@ -107,7 +107,7 @@ fn test_secrets_list() -> Result<(), Error> {
 #[test]
 fn test_secrets_share() -> Result<(), Error> {
     let mut p = spawn(
-        "./target/debug/zero-cli secrets share --id fc4d",
+        "./target/debug/zero-cli secrets share --slug share-other-secret",
         Some(15000),
     )?;
 
@@ -126,7 +126,7 @@ fn test_secrets_share() -> Result<(), Error> {
 #[test]
 fn test_secrets_view() -> Result<(), Error> {
     let mut p = spawn(
-        "./target/debug/zero-cli secrets view --id fc4d",
+        "./target/debug/zero-cli secrets view --slug share-other-secret",
         Some(15000),
     )?;
 
@@ -140,7 +140,7 @@ fn test_secrets_view() -> Result<(), Error> {
 #[test]
 fn test_secrets_field_edit() -> Result<(), Error> {
     let mut p = spawn(
-        "./target/debug/zero-cli secrets edit --id fc1d5  --key API_key",
+        "./target/debug/zero-cli secrets edit --slug keys-for-test  --key API_key",
         Some(15000),
     )?;
 

@@ -4,9 +4,8 @@ pub mod user_secret_details {
     #![allow(dead_code)]
     use std::result::Result;
     pub const OPERATION_NAME: &str = "UserSecretDetails";
-    pub const QUERY : & str = "query UserSecretDetails($id: uuid!) {\n   userSecret_by_pk(id: $id) {\n    id\n    name\n    vendor\n    updatedAt\n    projectId\n\n    fields {\n      id\n      name\n    }\n  }\n}\n" ;
-    use chrono::offset::Utc;
-    use chrono::DateTime;
+    pub const QUERY : & str = "query UserSecretDetails($id: uuid!) {\n  userSecret_by_pk(id: $id) {\n    id\n    name\n    vendor\n    updatedAt\n    projectId\n\n    fields {\n      id\n      name\n    }\n  }\n}\n" ;
+    use super::*;
     use serde::{Deserialize, Serialize};
     #[allow(dead_code)]
     type Boolean = bool;
@@ -15,6 +14,8 @@ pub mod user_secret_details {
     #[allow(dead_code)]
     type Int = i64;
     #[allow(dead_code)]
+    use chrono::offset::Utc;
+    use chrono::DateTime;
     type ID = String;
     type timestamptz = DateTime<Utc>;
     type uuid = ::uuid::Uuid;
@@ -22,15 +23,19 @@ pub mod user_secret_details {
     pub enum vendorEnum_enum {
         agora,
         ansible,
+        auth0,
         aws,
         azure,
         bitbucket,
         braintree,
-        claude,
+        cloudflare,
         datadog,
         digitalOcean,
+        discord,
         docker,
+        dropbox,
         facebook,
+        figma,
         gemini,
         gitHub,
         gitLab,
@@ -40,12 +45,15 @@ pub mod user_secret_details {
         jira,
         kubernetes,
         linear,
+        linkedIn,
         mailchimp,
         mixpanel,
+        netlify,
         openAI,
         other,
         paypal,
         pulumi,
+        reddit,
         salesforce,
         segment,
         sendgrid,
@@ -55,6 +63,8 @@ pub mod user_secret_details {
         terraform,
         trello,
         twilio,
+        twitter,
+        vercel,
         zoom,
         Other(String),
     }
@@ -63,15 +73,19 @@ pub mod user_secret_details {
             ser.serialize_str(match *self {
                 vendorEnum_enum::agora => "agora",
                 vendorEnum_enum::ansible => "ansible",
+                vendorEnum_enum::auth0 => "auth0",
                 vendorEnum_enum::aws => "aws",
                 vendorEnum_enum::azure => "azure",
                 vendorEnum_enum::bitbucket => "bitbucket",
                 vendorEnum_enum::braintree => "braintree",
-                vendorEnum_enum::claude => "claude",
+                vendorEnum_enum::cloudflare => "cloudflare",
                 vendorEnum_enum::datadog => "datadog",
                 vendorEnum_enum::digitalOcean => "digitalOcean",
+                vendorEnum_enum::discord => "discord",
                 vendorEnum_enum::docker => "docker",
+                vendorEnum_enum::dropbox => "dropbox",
                 vendorEnum_enum::facebook => "facebook",
+                vendorEnum_enum::figma => "figma",
                 vendorEnum_enum::gemini => "gemini",
                 vendorEnum_enum::gitHub => "gitHub",
                 vendorEnum_enum::gitLab => "gitLab",
@@ -81,12 +95,15 @@ pub mod user_secret_details {
                 vendorEnum_enum::jira => "jira",
                 vendorEnum_enum::kubernetes => "kubernetes",
                 vendorEnum_enum::linear => "linear",
+                vendorEnum_enum::linkedIn => "linkedIn",
                 vendorEnum_enum::mailchimp => "mailchimp",
                 vendorEnum_enum::mixpanel => "mixpanel",
+                vendorEnum_enum::netlify => "netlify",
                 vendorEnum_enum::openAI => "openAI",
                 vendorEnum_enum::other => "other",
                 vendorEnum_enum::paypal => "paypal",
                 vendorEnum_enum::pulumi => "pulumi",
+                vendorEnum_enum::reddit => "reddit",
                 vendorEnum_enum::salesforce => "salesforce",
                 vendorEnum_enum::segment => "segment",
                 vendorEnum_enum::sendgrid => "sendgrid",
@@ -96,6 +113,8 @@ pub mod user_secret_details {
                 vendorEnum_enum::terraform => "terraform",
                 vendorEnum_enum::trello => "trello",
                 vendorEnum_enum::twilio => "twilio",
+                vendorEnum_enum::twitter => "twitter",
+                vendorEnum_enum::vercel => "vercel",
                 vendorEnum_enum::zoom => "zoom",
                 vendorEnum_enum::Other(ref s) => &s,
             })
@@ -107,15 +126,19 @@ pub mod user_secret_details {
             match s.as_str() {
                 "agora" => Ok(vendorEnum_enum::agora),
                 "ansible" => Ok(vendorEnum_enum::ansible),
+                "auth0" => Ok(vendorEnum_enum::auth0),
                 "aws" => Ok(vendorEnum_enum::aws),
                 "azure" => Ok(vendorEnum_enum::azure),
                 "bitbucket" => Ok(vendorEnum_enum::bitbucket),
                 "braintree" => Ok(vendorEnum_enum::braintree),
-                "claude" => Ok(vendorEnum_enum::claude),
+                "cloudflare" => Ok(vendorEnum_enum::cloudflare),
                 "datadog" => Ok(vendorEnum_enum::datadog),
                 "digitalOcean" => Ok(vendorEnum_enum::digitalOcean),
+                "discord" => Ok(vendorEnum_enum::discord),
                 "docker" => Ok(vendorEnum_enum::docker),
+                "dropbox" => Ok(vendorEnum_enum::dropbox),
                 "facebook" => Ok(vendorEnum_enum::facebook),
+                "figma" => Ok(vendorEnum_enum::figma),
                 "gemini" => Ok(vendorEnum_enum::gemini),
                 "gitHub" => Ok(vendorEnum_enum::gitHub),
                 "gitLab" => Ok(vendorEnum_enum::gitLab),
@@ -125,12 +148,15 @@ pub mod user_secret_details {
                 "jira" => Ok(vendorEnum_enum::jira),
                 "kubernetes" => Ok(vendorEnum_enum::kubernetes),
                 "linear" => Ok(vendorEnum_enum::linear),
+                "linkedIn" => Ok(vendorEnum_enum::linkedIn),
                 "mailchimp" => Ok(vendorEnum_enum::mailchimp),
                 "mixpanel" => Ok(vendorEnum_enum::mixpanel),
+                "netlify" => Ok(vendorEnum_enum::netlify),
                 "openAI" => Ok(vendorEnum_enum::openAI),
                 "other" => Ok(vendorEnum_enum::other),
                 "paypal" => Ok(vendorEnum_enum::paypal),
                 "pulumi" => Ok(vendorEnum_enum::pulumi),
+                "reddit" => Ok(vendorEnum_enum::reddit),
                 "salesforce" => Ok(vendorEnum_enum::salesforce),
                 "segment" => Ok(vendorEnum_enum::segment),
                 "sendgrid" => Ok(vendorEnum_enum::sendgrid),
@@ -140,6 +166,8 @@ pub mod user_secret_details {
                 "terraform" => Ok(vendorEnum_enum::terraform),
                 "trello" => Ok(vendorEnum_enum::trello),
                 "twilio" => Ok(vendorEnum_enum::twilio),
+                "twitter" => Ok(vendorEnum_enum::twitter),
+                "vercel" => Ok(vendorEnum_enum::vercel),
                 "zoom" => Ok(vendorEnum_enum::zoom),
                 _ => Ok(vendorEnum_enum::Other(s)),
             }

@@ -4,7 +4,7 @@ pub mod my_teams {
     #![allow(dead_code)]
     use std::result::Result;
     pub const OPERATION_NAME: &str = "MyTeams";
-    pub const QUERY : & str = "query MyTeams($userId: uuid!) {\n  team(\n    where: {\n      _and: [\n        { members: { member: { id: { _eq: $userId } } } }\n        { ownerUserId: { _eq: $userId } }\n      ]\n    }\n    order_by: { lastUpdatedAt: desc }\n    limit: 1000\n  ) {\n    id\n    name\n\n    owner {\n      id\n      name\n    }\n\n    members_aggregate {\n      aggregate {\n        count\n      }\n    }\n  }\n}\n" ;
+    pub const QUERY : & str = "query MyTeams($userId: uuid!) {\n  team(\n    where: { ownerUserId: { _eq: $userId }}\n    order_by: { updatedAt: desc }\n    limit: 1000\n  ) {\n    id\n    name\n    slug\n\n    owner {\n      id\n      name\n    }\n\n    members_aggregate {\n      aggregate {\n        count\n      }\n    }\n  }\n}\n" ;
     use super::*;
     use serde::{Deserialize, Serialize};
     #[allow(dead_code)]
@@ -30,6 +30,7 @@ pub mod my_teams {
     pub struct MyTeamsTeam {
         pub id: uuid,
         pub name: String,
+        pub slug: String,
         pub owner: MyTeamsTeamOwner,
         pub members_aggregate: MyTeamsTeamMembersAggregate,
     }

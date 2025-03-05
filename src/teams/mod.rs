@@ -20,8 +20,8 @@ mod delete;
 mod edit;
 /// ## Teams Leave
 ///
-///  The “leave” function is responsible for leaving the user from the team whose ID they passed as an argument.
-///  The function check team id, ask for confirmation by entering the first four characters of the team id.
+///  The “leave” function is responsible for leaving the user from the team whose slug they passed as an argument.
+///  The function check team slug, ask for confirmation by entering the slug.
 ///  Removes the user from the team and sends a notification by email.
 ///  Shows a success or failure message
 ///

@@ -9,8 +9,8 @@ use crate::common::{
     },
     keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
 };
+use crate::projects::common::project_info_by_slug::project_info_by_slug;
 use crate::projects::share::graphql::project_secrets_ids::{
     project_secrets_ids, ProjectSecretsIds,
 };
@@ -23,12 +23,8 @@ use termimad::crossterm::style::{Color, Stylize};
 
 #[derive(Args, Debug)]
 pub struct ProjectsShareArgs {
-    #[clap(
-        short,
-        long,
-        help = "Project ID (First 4 characters or more are allowed)"
-    )]
-    id: String,
+    #[clap(short, long, help = "Project slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -46,23 +42,24 @@ pub fn share(args: &ProjectsShareArgs) {
         None => keyring::get("access_token"),
     };
 
-    let project_id = query_full_id(QueryType::Project, args.id.clone(), &access_token);
+    let authorization_headers = authorization_headers(&access_token);
+    let share_project_info = project_info_by_slug(&args.slug, &access_token);
 
     let user_secrets_error_message = format!(
         "Sharing failed. No secrets were found for the '{}' project.",
-        &args.id.clone()
+        &args.slug.clone()
     );
 
     let project = match execute_graphql_request::<
         project_secrets_ids::Variables,
         project_secrets_ids::ResponseData,
     >(
-        authorization_headers(&access_token),
+        authorization_headers.clone(),
         ProjectSecretsIds::build_query,
         &Client::new(),
         &user_secrets_error_message,
         project_secrets_ids::Variables {
-            project_id: project_id,
+            project_id: share_project_info.id.clone(),
         },
     )
     .project_by_pk
@@ -186,12 +183,12 @@ pub fn share(args: &ProjectsShareArgs) {
         insert_secret_sharing_record::Variables,
         insert_secret_sharing_record::ResponseData,
     >(
-        authorization_headers(&access_token),
+        authorization_headers.clone(),
         InsertSecretSharingRecord::build_query,
         &Client::new(),
         &format!(
             "Sharing failed. Failed to generate a secret sharing url for the project '{}'.",
-            &args.id.clone()
+            &args.slug.clone()
         ),
         insert_secret_sharing_record::Variables {
             expires_at: (Utc::now() + Duration::minutes(expires_at_minutes)).to_rfc3339(),
@@ -202,11 +199,11 @@ pub fn share(args: &ProjectsShareArgs) {
     .insert_secret_sharing_record
     .id;
 
-    let secrets_sharing_url = format!("{}/sharing/{}", config.webapp_url, secrets_sharing_id);
+    let secrets_sharing_url = format!("{}/private/{}", config.webapp_url, secrets_sharing_id);
 
     println!(
         "Your link with secrets for the '{}' project",
-        &project_id.to_string()[..4].dark_cyan()
+        &share_project_info.slug.clone().dark_cyan()
     );
 
     println!(

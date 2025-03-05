@@ -8,5 +8,6 @@ query UserPersonalProjectTeamId($userId: uuid!) {
     }
   ) {
     id
+    slug
   }
 }

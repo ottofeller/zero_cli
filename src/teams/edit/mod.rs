@@ -1,13 +1,8 @@
 mod graphql;
 use crate::common::{
-    authorization_headers::authorization_headers,
-    colorful_theme::theme,
-    config::Config,
-    execute_graphql_request::execute_graphql_request,
-    keyring::keyring,
-    print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
-    slugify::slugify_prompt,
+    authorization_headers::authorization_headers, colorful_theme::theme, config::Config,
+    execute_graphql_request::execute_graphql_request, keyring::keyring,
+    print_formatted_error::print_formatted_error, slugify::slugify_prompt,
     validate_name::validate_name,
 };
 use clap::Args;
@@ -21,14 +16,12 @@ use termimad::crossterm::style::{style, Color, Stylize};
 
 #[derive(Args, Debug)]
 pub struct TeamsEditArgs {
-    #[clap(short, long, help = "Team ID (First 4 characters or more are allowed)")]
-    id: String,
+    #[clap(short, long, help = "Team slug")]
+    slug: String,
     #[clap(short, long, help = "The name of the team, not required")]
     name: Option<String>,
     #[clap(short, long, help = "The description of the team, not required")]
     description: Option<String>,
-    #[clap(short, long, help = "The slug of the team, not required")]
-    slug: Option<String>,
     #[clap(
         short,
         long,
@@ -43,7 +36,6 @@ pub fn edit(args: &TeamsEditArgs) -> () {
         None => keyring::get("access_token"),
     };
 
-    let team_id = query_full_id(QueryType::Teams, args.id.clone(), &access_token);
     let client = Client::new();
     let headers = authorization_headers(&access_token);
     let mut name = args.name.clone();
@@ -64,7 +56,7 @@ pub fn edit(args: &TeamsEditArgs) -> () {
         std::process::exit(1);
     }
 
-    let edited_team = match user_teams.iter().find(|team| team.id == team_id) {
+    let edited_team = match user_teams.iter().find(|team| team.slug == args.slug) {
         Some(team_info) => team_info,
 
         None => {
@@ -85,9 +77,7 @@ pub fn edit(args: &TeamsEditArgs) -> () {
     if name.is_none() && description.is_none() {
         name = match Input::with_theme(&theme())
             .with_prompt("Type a new team name:")
-            .validate_with(|name: &String| -> Result<(), &str> {
-                validate_name(name)
-            })
+            .validate_with(|name: &String| -> Result<(), &str> { validate_name(name) })
             .default(edited_team.name.clone())
             .interact()
         {
@@ -101,10 +91,7 @@ pub fn edit(args: &TeamsEditArgs) -> () {
 
         description = match Input::with_theme(&theme())
             .with_prompt("Type a new team description:")
-            .default(match &edited_team.description {
-                Some(description) => description.clone(),
-                None => "".to_string(),
-            })
+            .default(edited_team.description.clone())
             .interact()
         {
             Ok(new_description) => Some(new_description),
@@ -116,6 +103,8 @@ pub fn edit(args: &TeamsEditArgs) -> () {
         };
     }
 
+    let team_slug = slugify_prompt(&args.slug, "Type a slug for the team:");
+
     if let Some(name) = name {
         let update_team_name_error_message = "Editing error. Failed to update the team name.";
 
@@ -126,9 +115,9 @@ pub fn edit(args: &TeamsEditArgs) -> () {
                 &client,
                 update_team_name_error_message,
                 update_team_name::Variables {
-                    id: team_id,
+                    id: edited_team.id,
                     name: name.to_owned(),
-                    slug: slugify_prompt(&name, "Type a slug for the team:"),
+                    slug: team_slug.clone(),
                 },
             )
             .update_team_by_pk;
@@ -152,7 +141,7 @@ pub fn edit(args: &TeamsEditArgs) -> () {
             &client,
             update_team_description_error_message,
             update_team_description::Variables {
-                id: team_id,
+                id: edited_team.id,
                 description,
             },
         )
@@ -169,9 +158,9 @@ pub fn edit(args: &TeamsEditArgs) -> () {
         "✔".green(),
         "The team has been successfully updated.",
         style(format!(
-            "{}/teams/{}?tab=settings",
+            "{}/{}/settings",
             Config::new().webapp_url,
-            team_id
+            &team_slug
         ))
         .with(Color::Rgb {
             r: 0,

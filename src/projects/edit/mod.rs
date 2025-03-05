@@ -1,15 +1,11 @@
 mod graphql;
 use crate::common::{
-    authorization_headers::authorization_headers,
-    colorful_theme::theme,
-    config::Config,
-    execute_graphql_request::execute_graphql_request,
-    keyring::keyring,
-    print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
-    slugify::slugify_prompt, validate_name::validate_name,
+    authorization_headers::authorization_headers, colorful_theme::theme, config::Config,
+    execute_graphql_request::execute_graphql_request, keyring::keyring,
+    print_formatted_error::print_formatted_error, slugify::slugify_prompt,
+    validate_name::validate_name,
 };
-use crate::projects::edit::graphql::project_info::{project_info, ProjectInfo};
+use crate::projects::common::project_info_by_slug::project_info_by_slug;
 use crate::projects::edit::graphql::update_project_description::{
     update_project_description, UpdateProjectDescription,
 };
@@ -22,12 +18,8 @@ use termimad::crossterm::style::{style, Color, Stylize};
 
 #[derive(Args, Debug)]
 pub struct ProjectsEditArgs {
-    #[clap(
-        short,
-        long,
-        help = "Project ID (First 4 characters or more are allowed)"
-    )]
-    id: String,
+    #[clap(short, long, help = "Project slug")]
+    slug: String,
     #[clap(short, long, help = "Project name, not required")]
     name: Option<String>,
     #[clap(short, long, help = "Project description, not required")]
@@ -46,6 +38,7 @@ pub fn edit(args: &ProjectsEditArgs) -> () {
         None => keyring::get("access_token"),
     };
 
+    let authorization_headers = authorization_headers(&access_token);
     let mut name = args.name.clone();
     let mut description = args.description.clone();
 
@@ -57,41 +50,15 @@ pub fn edit(args: &ProjectsEditArgs) -> () {
         std::process::exit(1);
     }
 
-    let project_id = query_full_id(QueryType::Project, args.id.clone(), &access_token);
     let client = Client::new();
-    let headers = authorization_headers(&access_token);
-
-    let project_info =
-        match execute_graphql_request::<project_info::Variables, project_info::ResponseData>(
-            headers.clone(),
-            ProjectInfo::build_query,
-            &client,
-            "Failed to retrieve project info.",
-            project_info::Variables {
-                project_id: project_id.clone(),
-            },
-        )
-        .project_by_pk
-        {
-            Some(project_info) => project_info,
-
-            None => {
-                print_formatted_error(&format!(
-                    "Editing failed. Project '{}' was not found.",
-                    args.id.clone()
-                ));
-                std::process::exit(1);
-            }
-        };
+    let edit_project_info = project_info_by_slug(&args.slug, &access_token);
 
     // If no arguments are passed, the user will be prompted to enter a new name and description of the project
     if name.is_none() && description.is_none() {
         name = match Input::with_theme(&theme())
             .with_prompt("Type a new project name:")
-            .validate_with(|name: &String| -> Result<(), &str> {
-                validate_name(&name)
-            })
-            .default(project_info.name.clone())
+            .validate_with(|name: &String| -> Result<(), &str> { validate_name(&name) })
+            .default(edit_project_info.name.clone())
             .interact()
         {
             Ok(new_name) => Some(new_name),
@@ -132,21 +99,21 @@ pub fn edit(args: &ProjectsEditArgs) -> () {
     if let Some(name) = name {
         let update_project_name_error_message = format!(
             "Editing failed. Failed to update the name of the project '{}'.",
-            args.id.clone()
+            args.slug.clone()
         );
 
         match execute_graphql_request::<
             update_project_name::Variables,
             update_project_name::ResponseData,
         >(
-            headers.clone(),
+            authorization_headers.clone(),
             UpdateProjectName::build_query,
             &client,
             &update_project_name_error_message,
             update_project_name::Variables {
-                id: project_id.clone(),
+                id: edit_project_info.id.clone(),
                 name: name.clone(),
-                slug: slugify_prompt(&name, "Type a slug for the project:"),
+                slug: slugify_prompt(&args.slug, "Type a slug for the project:"),
             },
         )
         .update_project
@@ -168,19 +135,19 @@ pub fn edit(args: &ProjectsEditArgs) -> () {
     if let Some(description) = description {
         let update_project_description_error_message = format!(
             "Editing failed. Failed to update the description of the project '{}'.",
-            args.id.clone()
+            args.slug.clone()
         );
 
         match execute_graphql_request::<
             update_project_description::Variables,
             update_project_description::ResponseData,
         >(
-            headers,
+            authorization_headers.clone(),
             UpdateProjectDescription::build_query,
             &client,
             &update_project_description_error_message,
             update_project_description::Variables {
-                project_id: project_id.clone(),
+                project_id: edit_project_info.id.clone(),
                 project_description: description.clone(),
             },
         )
@@ -209,9 +176,18 @@ pub fn edit(args: &ProjectsEditArgs) -> () {
     println!(
         "{}",
         style(format!(
-            "{}/projects/{}",
+            "{}/{}/{}",
             Config::new().webapp_url,
-            project_id.to_string().replace("-", "")
+            match &edit_project_info.team {
+                Some(team) => {
+                    team.slug.clone()
+                }
+                None => {
+                    print_formatted_error("Project must belong to a team");
+                    std::process::exit(1);
+                }
+            },
+            &edit_project_info.slug
         ))
         .with(Color::Rgb {
             r: 0,

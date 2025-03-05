@@ -7,12 +7,13 @@ use crate::common::{
     execute_graphql_request::execute_graphql_request,
     keyring::keyring,
     print_formatted_error::print_formatted_error,
-    query_full_id::{query_full_id, QueryType},
     slugify::slugify_prompt,
     validate_name::validate_name,
     validate_secret_field_name::validate_secret_field_name,
     vendors::Vendors,
 };
+
+use crate::projects::common::project_info_by_slug::project_info_by_slug;
 
 use crate::secrets::create::graphql::create_secret::{create_secret, CreateSecret};
 use clap::Args;
@@ -27,12 +28,8 @@ use termimad::{
 
 #[derive(Args, Debug)]
 pub struct SecretsCreateArgs {
-    #[clap(
-        short,
-        long,
-        help = "Project ID (First 4 characters or more are allowed)"
-    )]
-    id: String,
+    #[clap(short, long, help = "Project slug")]
+    slug: String,
     #[clap(
         short,
         long,
@@ -57,7 +54,6 @@ pub fn create(args: &SecretsCreateArgs) {
 
     let client = Client::new();
     let headers = authorization_headers(&access_token);
-    let project_id = query_full_id(QueryType::Project, args.id.clone(), &access_token);
 
     let secret_name = match &args.name {
         Some(name) => match validate_name(&name) {
@@ -72,9 +68,7 @@ pub fn create(args: &SecretsCreateArgs) {
         None => {
             match Input::with_theme(&theme())
                 .with_prompt("Type a name for the secret:")
-                .validate_with(|input: &String| -> Result<(), &str> {
-                    validate_name(&input)
-                })
+                .validate_with(|input: &String| -> Result<(), &str> { validate_name(&input) })
                 .interact()
             {
                 Ok(name) => name,
@@ -168,6 +162,9 @@ pub fn create(args: &SecretsCreateArgs) {
         }
     }
 
+    let project_info = project_info_by_slug(&args.slug, &access_token);
+    let secret_slug = slugify_prompt(&secret_name, "Type a slug for the secret:");
+
     let secret_id =
         execute_graphql_request::<create_secret::Variables, create_secret::ResponseData>(
             headers.clone(),
@@ -178,8 +175,8 @@ pub fn create(args: &SecretsCreateArgs) {
                 fields: secret_fields,
                 secret: create_secret::CreateSecretInput {
                     name: secret_name.clone(),
-                    slug: slugify_prompt(&secret_name, "Type a slug for the secret:"),
-                    project_id: project_id.to_string(),
+                    slug: secret_slug.clone(),
+                    project_id: project_info.id.to_string(),
                     vendor: selected_vendor.to_string(),
                 },
             },
@@ -198,10 +195,17 @@ pub fn create(args: &SecretsCreateArgs) {
     let mut expander = text_template.expander();
 
     let secret_link = style(format!(
-        "{}/projects/{}/secrets/{}",
+        "{}/{}/{}/{}",
         config.webapp_url,
-        &project_id.to_string().replace("-", ""),
-        &secret_id.replace("-", "")
+        match &project_info.team {
+            Some(team) => team.slug.clone(),
+            None => {
+                print_formatted_error("Project must belong to a team");
+                std::process::exit(1);
+            }
+        },
+        &project_info.slug.to_string(),
+        &secret_slug,
     ))
     .with(Color::Rgb {
         r: 0,

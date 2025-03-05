@@ -556,8 +556,7 @@ type SuccessOutput {
 
 input TokenObject {
   expiresAt: String
-  id: ID
-  name: String
+  name: String!
 }
 
 type TransferCredentialProjectOutput {
@@ -1020,6 +1019,32 @@ input credentialToken_updates {
 
   """filter the rows which have to be updated"""
   where: credentialToken_bool_exp!
+}
+
+enum credentialVendorEnum_enum {
+  auth0
+  bitbucket
+  discord
+  dropbox
+  figma
+  gitHub
+  gitLab
+  google
+  linkedIn
+  reddit
+  twitter
+  zoom
+}
+
+"""
+Boolean expression to compare columns of type "credentialVendorEnum_enum". All fields are combined with logical 'AND'.
+"""
+input credentialVendorEnum_enum_comparison_exp {
+  _eq: credentialVendorEnum_enum
+  _in: [credentialVendorEnum_enum!]
+  _is_null: Boolean
+  _neq: credentialVendorEnum_enum
+  _nin: [credentialVendorEnum_enum!]
 }
 
 """ordering argument of a cursor"""
@@ -1781,6 +1806,7 @@ input jsonb_comparison_exp {
 }
 
 enum listIdEnum_enum {
+  credentials
   integrations
   projects
   secrets
@@ -1812,7 +1838,7 @@ type mutation_root {
   cloudflareInstall(downloadSecrets: CloudflareDownloadSecretsInput!, integrationInstallation: CloudflareInstallInputIntegration!, zero: CloudflareInputZero!): SuccessOutput!
   cloudflareUpdateSecrets(integrationInstallation: CloudflareUpdateSecretsInputIntegration!, zero: CloudflareUpdateSecretsInputZero!): SuccessOutput!
   confirmEmailChange(code: String!): ConfirmEmailChangeOutput!
-  createCredentialProject(icon: String!, name: String!, slug: String!, token: TokenObject): CreateCredentialProjectOutput!
+  createCredentialProject(icon: String!, name: String!, slug: String!, token: TokenObject!): CreateCredentialProjectOutput!
   createCredentialProjectToken(object: CreateCredentialProjectTokenInput!): CreateCredentialProjectTokenOutput!
   createProject(icon: String!, name: String!, slug: String!, token: TokenObject): CreateProjectOutput!
   createProjectToken(object: CreateProjectTokenInput!): CreateProjectTokenOutput!
@@ -3824,56 +3850,6 @@ type query_root {
   ): [project!]!
 
   """
-  execute function "search_team_by_id" which returns "team"
-  """
-  search_team_by_id(
-    """
-    input parameters for function "search_team_by_id"
-    """
-    args: search_team_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [team_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [team_order_by!]
-
-    """filter the rows returned"""
-    where: team_bool_exp
-  ): [team!]!
-
-  """
-  execute function "search_team_by_id" and query aggregates on result of table type "team"
-  """
-  search_team_by_id_aggregate(
-    """
-    input parameters for function "search_team_by_id_aggregate"
-    """
-    args: search_team_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [team_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [team_order_by!]
-
-    """filter the rows returned"""
-    where: team_bool_exp
-  ): team_aggregate!
-
-  """
   execute function "search_token_by_id" which returns "token"
   """
   search_token_by_id(
@@ -3972,56 +3948,6 @@ type query_root {
     """filter the rows returned"""
     where: user_bool_exp
   ): [user!]!
-
-  """
-  execute function "search_user_secret_by_id" which returns "userSecret"
-  """
-  search_user_secret_by_id(
-    """
-    input parameters for function "search_user_secret_by_id"
-    """
-    args: search_user_secret_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [userSecret_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [userSecret_order_by!]
-
-    """filter the rows returned"""
-    where: userSecret_bool_exp
-  ): [userSecret!]!
-
-  """
-  execute function "search_user_secret_by_id" and query aggregates on result of table type "userSecret"
-  """
-  search_user_secret_by_id_aggregate(
-    """
-    input parameters for function "search_user_secret_by_id_aggregate"
-    """
-    args: search_user_secret_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [userSecret_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [userSecret_order_by!]
-
-    """filter the rows returned"""
-    where: userSecret_bool_exp
-  ): userSecret_aggregate!
   sharingData(id: ID!): SharingDataOutput
 
   """
@@ -4453,10 +4379,6 @@ input search_project_by_id_args {
   match: String
 }
 
-input search_team_by_id_args {
-  match: String
-}
-
 input search_token_by_id_args {
   match: String
 }
@@ -4466,10 +4388,6 @@ input search_usage_history_by_id_args {
 }
 
 input search_user_by_id_args {
-  match: String
-}
-
-input search_user_secret_by_id_args {
   match: String
 }
 
@@ -4865,56 +4783,6 @@ type subscription_root {
   ): [project!]!
 
   """
-  execute function "search_team_by_id" which returns "team"
-  """
-  search_team_by_id(
-    """
-    input parameters for function "search_team_by_id"
-    """
-    args: search_team_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [team_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [team_order_by!]
-
-    """filter the rows returned"""
-    where: team_bool_exp
-  ): [team!]!
-
-  """
-  execute function "search_team_by_id" and query aggregates on result of table type "team"
-  """
-  search_team_by_id_aggregate(
-    """
-    input parameters for function "search_team_by_id_aggregate"
-    """
-    args: search_team_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [team_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [team_order_by!]
-
-    """filter the rows returned"""
-    where: team_bool_exp
-  ): team_aggregate!
-
-  """
   execute function "search_token_by_id" which returns "token"
   """
   search_token_by_id(
@@ -5013,56 +4881,6 @@ type subscription_root {
     """filter the rows returned"""
     where: user_bool_exp
   ): [user!]!
-
-  """
-  execute function "search_user_secret_by_id" which returns "userSecret"
-  """
-  search_user_secret_by_id(
-    """
-    input parameters for function "search_user_secret_by_id"
-    """
-    args: search_user_secret_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [userSecret_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [userSecret_order_by!]
-
-    """filter the rows returned"""
-    where: userSecret_bool_exp
-  ): [userSecret!]!
-
-  """
-  execute function "search_user_secret_by_id" and query aggregates on result of table type "userSecret"
-  """
-  search_user_secret_by_id_aggregate(
-    """
-    input parameters for function "search_user_secret_by_id_aggregate"
-    """
-    args: search_user_secret_by_id_args!
-
-    """distinct select on columns"""
-    distinct_on: [userSecret_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [userSecret_order_by!]
-
-    """filter the rows returned"""
-    where: userSecret_bool_exp
-  ): userSecret_aggregate!
 
   """
   fetch data from the table: "team"
@@ -5676,7 +5494,6 @@ type team {
     """filter the rows returned"""
     where: teamInvitation_bool_exp
   ): [teamInvitation!]!
-  lastUpdatedAt: timestamptz
 
   """An array relationship"""
   members(
@@ -6259,7 +6076,6 @@ input team_bool_exp {
   description: String_comparison_exp
   id: uuid_comparison_exp
   invitations: teamInvitation_bool_exp
-  lastUpdatedAt: timestamptz_comparison_exp
   members: teamUser_bool_exp
   members_aggregate: teamUser_aggregate_bool_exp
   name: String_comparison_exp
@@ -6275,7 +6091,6 @@ type team_max_fields {
   createdAt: timestamptz
   description: String
   id: uuid
-  lastUpdatedAt: timestamptz
   name: String
   ownerUserId: uuid
   slug: String
@@ -6289,7 +6104,6 @@ input team_max_order_by {
   createdAt: order_by
   description: order_by
   id: order_by
-  lastUpdatedAt: order_by
   name: order_by
   ownerUserId: order_by
   slug: order_by
@@ -6301,7 +6115,6 @@ type team_min_fields {
   createdAt: timestamptz
   description: String
   id: uuid
-  lastUpdatedAt: timestamptz
   name: String
   ownerUserId: uuid
   slug: String
@@ -6315,7 +6128,6 @@ input team_min_order_by {
   createdAt: order_by
   description: order_by
   id: order_by
-  lastUpdatedAt: order_by
   name: order_by
   ownerUserId: order_by
   slug: order_by
@@ -6340,7 +6152,6 @@ input team_order_by {
   description: order_by
   id: order_by
   invitations_aggregate: teamInvitation_aggregate_order_by
-  lastUpdatedAt: order_by
   members_aggregate: teamUser_aggregate_order_by
   name: order_by
   owner: user_order_by
@@ -6367,9 +6178,6 @@ enum team_select_column {
 
   """column name"""
   id
-
-  """column name"""
-  lastUpdatedAt
 
   """column name"""
   name
@@ -6409,7 +6217,6 @@ input team_stream_cursor_value_input {
   createdAt: timestamptz
   description: String
   id: uuid
-  lastUpdatedAt: timestamptz
   name: String
   ownerUserId: uuid
   slug: String
@@ -7190,7 +6997,7 @@ type userCredentialSecret {
   projectId: uuid!
   slug: String!
   updatedAt: timestamptz!
-  vendor: vendorEnum_enum!
+  vendor: credentialVendorEnum_enum!
 }
 
 """userCredentialSecret fields"""
@@ -7471,7 +7278,7 @@ input userCredentialSecret_bool_exp {
   projectId: uuid_comparison_exp
   slug: String_comparison_exp
   updatedAt: timestamptz_comparison_exp
-  vendor: vendorEnum_enum_comparison_exp
+  vendor: credentialVendorEnum_enum_comparison_exp
 }
 
 """
@@ -7516,7 +7323,7 @@ input userCredentialSecret_insert_input {
   name: String
   projectId: uuid
   slug: String
-  vendor: vendorEnum_enum
+  vendor: credentialVendorEnum_enum
 }
 
 """aggregate max on columns"""
@@ -7671,7 +7478,7 @@ input userCredentialSecret_set_input {
   meta: jsonb
   name: String
   slug: String
-  vendor: vendorEnum_enum
+  vendor: credentialVendorEnum_enum
 }
 
 """
@@ -7696,7 +7503,7 @@ input userCredentialSecret_stream_cursor_value_input {
   projectId: uuid
   slug: String
   updatedAt: timestamptz
-  vendor: vendorEnum_enum
+  vendor: credentialVendorEnum_enum
 }
 
 """
